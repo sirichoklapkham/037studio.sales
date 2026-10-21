@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>037Studio - Mobile Sales & Booking Calendar Audit</title>
+    <title>037Studio & PhotoBooth Audit</title>
 
     <!-- App Icon & Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="037Studio">
 
-    <!-- Tailwind CSS & Lucide Icons (Async/Defer Loading) -->
+    <!-- Tailwind CSS & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest" defer></script>
     <style>
@@ -41,8 +41,8 @@
                          onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'camera\' class=\'w-5 h-5 text-amber-500\'></i>'; renderIcons();">
                 </div>
                 <div>
-                    <h1 class="font-bold text-base leading-tight">037Studio</h1>
-                    <p class="text-[10px] text-amber-400 font-medium">ระบบตรวจเช็คยอดจอง & ยอดมัดจำ</p>
+                    <h1 class="font-bold text-base leading-tight" id="appHeaderTitle">037Studio</h1>
+                    <p class="text-[10px] text-amber-400 font-medium" id="appHeaderSub">ระบบตรวจเช็คยอดจอง & ยอดมัดจำ</p>
                 </div>
             </div>
             <div class="flex items-center gap-1.5">
@@ -74,7 +74,7 @@
                     <button onclick="changeMonth(1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
                         <i data-lucide="chevron-right" class="w-4 h-4"></i>
                     </button>
-                    <a href="https://calendar.google.com/calendar/u/1?cid=c2lyaWNob2tsYXBraGFtQGdtYWlsLmNvbQ" target="_blank" class="ml-1 bg-slate-900 text-amber-400 text-[10px] font-semibold px-2 py-1 rounded-lg transition flex items-center gap-1">
+                    <a id="btnCalendarExternal" href="https://calendar.google.com/calendar/u/1?cid=c2lyaWNob2tsYXBraGFtQGdtYWlsLmNvbQ" target="_blank" class="ml-1 bg-slate-900 text-amber-400 text-[10px] font-semibold px-2 py-1 rounded-lg transition flex items-center gap-1">
                         <i data-lucide="external-link" class="w-3 h-3"></i>
                         <span>ปฏิทิน</span>
                     </a>
@@ -96,7 +96,7 @@
             <span id="loadingText" class="text-xs">กำลังเชื่อมต่อข้อมูลคิวจอง...</span>
         </div>
 
-        <!-- ALERT BANNER: Deposit Alert -->
+        <!-- ALERT BANNER -->
         <div id="depositStatusBanner" class="rounded-2xl p-3.5 border transition-all duration-300 flex items-start gap-3 shadow-sm bg-emerald-50 border-emerald-200 text-emerald-800">
             <i data-lucide="shield-check" class="w-5 h-5 text-emerald-500 shrink-0"></i>
             <div class="text-xs">
@@ -241,17 +241,22 @@
         </div>
     </div>
 
-    <!-- Mobile Bottom Navigation Bar -->
+    <!-- Mobile Bottom Navigation Bar (สลับโหมด 037Studio / PhotoBooth) -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
         <div class="max-w-md mx-auto h-16 flex justify-around items-center px-2">
-            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center gap-1 text-amber-600">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                <span class="text-[10px] font-bold">ภาพรวมยอดจอง</span>
+            <!-- ปุ่มวงสีแดงเดิม: 037Studio -->
+            <button onclick="switchTab('studio')" id="tabBtnStudio" class="flex flex-col items-center gap-1 text-amber-600 font-bold">
+                <i data-lucide="camera" class="w-5 h-5"></i>
+                <span class="text-[10px]">037Studio</span>
             </button>
-            <button onclick="toggleSettingsModal(true)" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
-                <i data-lucide="sliders" class="w-5 h-5"></i>
-                <span class="text-[10px] font-medium">การเชื่อมต่อ</span>
+            
+            <!-- ปุ่มวงสีเหลืองเดิม: PhotoBooth -->
+            <button onclick="switchTab('photobooth')" id="tabBtnPhotobooth" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span class="text-[10px] font-medium">PhotoBooth</span>
             </button>
+
+            <!-- ปุ่มเปิด Google Sheet -->
             <a href="https://docs.google.com/spreadsheets" target="_blank" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
                 <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
                 <span class="text-[10px] font-medium">Google Sheet</span>
@@ -260,9 +265,10 @@
     </nav>
 
     <script>
-        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCNAyy8zVmnELaWhRqLCvQo0RDUiFd9Ri10ORfSqzzIpL3oodwYsmDuNnYxh_AGck/exec";
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWidCv-wKZBRjxkmDOUFsjV59CdO_N_qBUYAJW6Q-Thozr3hUs1NPKrOYremBYpXPX/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
+        let currentTab = "studio"; // "studio" หรือ "photobooth"
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let selectedDateStr = new Date().toISOString().split('T')[0];
@@ -274,6 +280,34 @@
 
         function renderIcons() {
             if (window.lucide) lucide.createIcons();
+        }
+
+        // สลับแท็บระหว่าง 037Studio และ PhotoBooth
+        function switchTab(type) {
+            if (currentTab === type) return;
+            currentTab = type;
+
+            const studioBtn = document.getElementById("tabBtnStudio");
+            const pbBtn = document.getElementById("tabBtnPhotobooth");
+            const titleEl = document.getElementById("appHeaderTitle");
+            const subEl = document.getElementById("appHeaderSub");
+            const calExtLink = document.getElementById("btnCalendarExternal");
+
+            if (type === "studio") {
+                studioBtn.className = "flex flex-col items-center gap-1 text-amber-600 font-bold";
+                pbBtn.className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700";
+                titleEl.innerText = "037Studio";
+                subEl.innerText = "ระบบตรวจเช็คยอดจอง & ยอดมัดจำ";
+                calExtLink.href = "https://calendar.google.com/calendar/u/1?cid=c2lyaWNob2tsYXBraGFtQGdtYWlsLmNvbQ";
+            } else {
+                pbBtn.className = "flex flex-col items-center gap-1 text-pink-600 font-bold";
+                studioBtn.className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700";
+                titleEl.innerText = "PhotoBooth";
+                subEl.innerText = "ตารางงานตู้สติ๊กเกอร์ & ยอดมัดจำ";
+                calExtLink.href = "https://calendar.google.com/calendar/u/1?cid=ZDljZDlkYTg1OGU4Yjg3YTk1NzRiOGNlZWIzOWQwZWRmZWM4YWFiN2FlMGUyNGJlOTY3OTkwZmQ4ZjEzZGE0N0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t";
+            }
+
+            initApp(true);
         }
 
         function toggleSettingsModal(show) {
@@ -291,14 +325,12 @@
             initApp(true);
         }
 
-        // ปรับฟังก์ชันเปิด Modal ให้คำนวณและระบุยอดมัดจำ 50% อัตโนมัติเมื่อยังไม่มีการมัดจำ
         function toggleDepositModal(show, bookingId = '', currentDeposit = 0, totalPrice = 0) {
             const modal = document.getElementById("depositModal");
             if (show) {
                 document.getElementById("modalBookingId").value = bookingId;
                 
                 let depositVal = currentDeposit;
-                // ถ้ายังไม่มีการมัดจำ (มัดจำ = 0) ให้คำนวณ 50% ของยอดบริการรวมให้อัตโนมัติ
                 if ((!depositVal || Number(depositVal) === 0) && totalPrice > 0) {
                     depositVal = totalPrice * 0.5;
                 }
@@ -326,8 +358,8 @@
 
             try {
                 const [monthlyRes, dailyRes] = await Promise.all([
-                    fetch(`${SCRIPT_URL}?month=${monthFormatted}`, { redirect: "follow" }).then(r => r.json()).catch(() => null),
-                    fetch(`${SCRIPT_URL}?date=${selectedDateStr}`, { redirect: "follow" }).then(r => r.json()).catch(() => null)
+                    fetch(`${SCRIPT_URL}?type=${currentTab}&month=${monthFormatted}`, { redirect: "follow" }).then(r => r.json()).catch(() => null),
+                    fetch(`${SCRIPT_URL}?type=${currentTab}&date=${selectedDateStr}`, { redirect: "follow" }).then(r => r.json()).catch(() => null)
                 ]);
 
                 if (monthlyRes && monthlyRes.status === "success") {
@@ -449,7 +481,7 @@
             loading.classList.remove("hidden");
 
             try {
-                const response = await fetch(`${SCRIPT_URL}?date=${dateStr}`, { redirect: "follow" });
+                const response = await fetch(`${SCRIPT_URL}?type=${currentTab}&date=${dateStr}`, { redirect: "follow" });
                 const resData = await response.json();
                 dailyDataCache[dateStr] = resData;
                 renderReport(resData);
@@ -460,46 +492,75 @@
             }
         }
 
-        function formatBookingDescription(title, desc) {
+        // จัดการแกะโครงสร้างข้อความรายละเอียดงาน (ทั้งแบบ Studio และ PhotoBooth)
+        function formatBookingDescription(title, desc, location) {
             let fullText = (title + "\n" + desc).trim();
-            
-            let bookingNo = "";
-            let mainService = "";
-            let subService = "";
+
+            let customerName = "";
             let phone = "";
-            let name = "";
+            let line = "";
+            let jobType = "";
+            let placeName = "";
+            let mapUrl = "";
+            let totalAmt = "";
+            let depositAmt = "";
+            let balanceAmt = "";
+            let bookingDocUrl = "";
             let note = "";
 
-            const bMatch = fullText.match(/หมายเลขการจอง\s*([0-9A-Z]+)/i);
-            if (bMatch) bookingNo = bMatch[1];
+            // สกัดชื่อลูกค้า & เบอร์
+            const nameMatch = fullText.match(/ชื่อ\s*[:=]?\s*([^\n\r]+)/i);
+            if (nameMatch) customerName = nameMatch[1].trim();
 
-            const pMatch = fullText.match(/เบอร์โทรศัพท์\s*[:=]?\s*(\+?[0-9-]+)/i);
-            if (pMatch) phone = pMatch[1];
+            const phoneMatch = fullText.match(/(?:โทร|เบอร์โทรศัพท์)\s*[:=]?\s*(\+?[0-9-]+)/i);
+            if (phoneMatch) phone = phoneMatch[1].trim();
 
-            const nMatch = fullText.match(/ชื่อเล่น\s*[:=]?\s*([^\n\r]+)/i);
-            if (nMatch) name = nMatch[1].trim();
+            const lineMatch = fullText.match(/LINE\s*[:=]?\s*([^\n\r]+)/i);
+            if (lineMatch) line = lineMatch[1].trim();
 
-            const mMatch = fullText.match(/บริการหลัก\s*[:=]?\s*([^\n\r]+)/i);
-            if (mMatch) mainService = mMatch[1].trim();
+            // สกัดประเภทงาน
+            const typeMatch = fullText.match(/ประเภท\s*[:=]?\s*([^\n\r]+)/i);
+            if (typeMatch) jobType = typeMatch[1].trim();
 
-            const sMatch = fullText.match(/บริการย่อย\s*[:=]?\s*([^\n\r]+)/i);
-            if (sMatch) subService = sMatch[1].trim();
+            // สกัดสถานที่
+            const placeMatch = fullText.match(/ชื่อสถานที่\s*[:=]?\s*([^\n\r]+)/i);
+            if (placeMatch) placeName = placeMatch[1].trim();
+            else if (location) placeName = location;
 
-            const remMatch = fullText.match(/หมายเหตุบริการ\s*[:=]?\s*([\s\S]+)/i);
-            if (remMatch) note = remMatch[1].trim();
+            const mapMatch = fullText.match(/(https?:\/\/maps[^\s\n\r]+)/i);
+            if (mapMatch) mapUrl = mapMatch[1];
 
-            if (!bookingNo && !phone && !name && !mainService) {
+            // สกัดยอดเงิน
+            const totalMatch = fullText.match(/ยอดทั้งหมด\s*[:=]?\s*([0-9,]+)/i);
+            if (totalMatch) totalAmt = totalMatch[1];
+
+            const depMatch = fullText.match(/มัดจำแล้ว\s*[:=]?\s*([0-9,]+)/i);
+            if (depMatch) depositAmt = depMatch[1];
+
+            const balMatch = fullText.match(/คงเหลือ\s*[:=]?\s*([0-9,]+)/i);
+            if (balMatch) balanceAmt = balMatch[1];
+
+            // สกัดลิงก์ใบจองเอกสาร
+            const docMatch = fullText.match(/(https?:\/\/[^\s\n\r]+booking[^\s\n\r]*)/i);
+            if (docMatch) bookingDocUrl = docMatch[1];
+
+            // สกัดหมายเหตุ
+            const noteMatch = fullText.match(/หมายเหตุ[^\n\r]*\n([\s\S]+?)(?=——|$)/i);
+            if (noteMatch) note = noteMatch[1].trim();
+
+            if (!customerName && !phone && !jobType && !placeName) {
                 return `<div class="text-[11px] text-slate-600 whitespace-pre-line leading-relaxed">${fullText}</div>`;
             }
 
             let html = `<div class="space-y-1.5 text-[11px] text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">`;
-            if (bookingNo) html += `<div class="font-bold text-amber-700">📌 หมายเลขการจอง: #${bookingNo}</div>`;
-            if (name || phone) html += `<div>👤 <strong>ลูกค้า:</strong> ${name || '-'} (${phone || 'ไม่ระบุเบอร์'})</div>`;
-            if (mainService) html += `<div>🎬 <strong>บริการหลัก:</strong> ${mainService}</div>`;
-            if (subService) html += `<div>📸 <strong>บริการย่อย:</strong> ${subService}</div>`;
+            
+            if (customerName || phone) html += `<div>👤 <strong>ลูกค้า:</strong> ${customerName || '-'} (${phone || 'ไม่ระบุเบอร์'})${line ? ` | LINE: ${line}` : ''}</div>`;
+            if (jobType) html += `<div>📸 <strong>ประเภทงาน:</strong> ${jobType}</div>`;
+            if (placeName) html += `<div>📍 <strong>สถานที่:</strong> ${placeName} ${mapUrl ? `<a href="${mapUrl}" target="_blank" class="text-indigo-600 underline text-[10px] ml-1">[ดูแผนที่]</a>` : ''}</div>`;
             if (note) html += `<div class="text-slate-500 text-[10px] pt-1 border-t border-slate-200 mt-1">📝 <strong>หมายเหตุ:</strong> ${note}</div>`;
-            html += `</div>`;
+            if (bookingDocUrl) html += `<div class="pt-1"><a href="${bookingDocUrl}" target="_blank" class="text-amber-700 font-bold underline text-[10px] flex items-center gap-1"><i data-lucide="file-text" class="w-3 h-3"></i> ลิงก์ใบจองเอกสาร</a></div>`;
 
+            html += `</div>`;
             return html;
         }
 
@@ -516,7 +577,7 @@
 
             if (data.totalBookings === 0) {
                 bannerTitle.innerText = "ไม่มีคิวจองในวันที่เลือก";
-                bannerSub.innerText = "สตูดิโอว่าง สามารถรับคิวถ่ายทำเพิ่มได้";
+                bannerSub.innerText = "สามารถรับงานถ่ายทำ / ตู้ PhotoBooth เพิ่มได้";
             } else {
                 bannerTitle.innerText = `มีนัดหมายทั้งหมด ${data.totalBookings} คิว`;
                 bannerSub.innerText = `ยอดรวมบริการ ฿${data.totalSales.toLocaleString()} (ได้รับมัดจำแล้ว ฿${data.totalDeposit.toLocaleString()})`;
@@ -541,7 +602,7 @@
                 data.bookings.forEach(b => {
                     const isFullyPaid = Number(b.depositPrice) >= Number(b.totalPrice) && Number(b.totalPrice) > 0;
                     const isDeposit = Number(b.depositPrice) > 0;
-                    const formattedDesc = formatBookingDescription(b.title, b.desc);
+                    const formattedDesc = formatBookingDescription(b.title, b.desc, b.location);
 
                     let statusBadge = '';
                     if (isFullyPaid) {
@@ -568,7 +629,7 @@
 
                             <div class="space-y-1 pt-1 border-t border-slate-100">
                                 <div class="flex justify-between items-center text-slate-600">
-                                    <span>ยอดบริการทั้งหมด:</span>
+                                    <span>ยอดรวมงานทั้งหมด:</span>
                                     <strong class="text-slate-900 text-sm">฿${Number(b.totalPrice).toLocaleString()}</strong>
                                 </div>
                                 <div class="flex justify-between items-center text-slate-500 text-[11px]">
@@ -582,7 +643,6 @@
                             </div>
 
                             <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                                <!-- ส่ง totalPrice ไปเพื่อคำนวณมัดจำ 50% อัตโนมัติ -->
                                 <button onclick="toggleDepositModal(true, '${b.id}', ${b.depositPrice}, ${b.totalPrice})" 
                                         class="flex-1 min-w-[130px] py-2 px-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
                                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
@@ -625,6 +685,7 @@
             try {
                 const payload = {
                     action: "updateDeposit",
+                    type: currentTab,
                     bookingId: bookingId,
                     depositAmount: totalPrice,
                     slipBase64: "",
@@ -672,6 +733,7 @@
             try {
                 const payload = {
                     action: "updateDeposit",
+                    type: currentTab,
                     bookingId: bookingId,
                     depositAmount: depositAmount,
                     slipBase64: slipBase64,
