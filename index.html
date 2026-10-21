@@ -182,7 +182,10 @@
 
             <div class="space-y-3 text-xs">
                 <div>
-                    <label class="block text-slate-700 font-medium mb-1">ยอดเงินมัดจำ (บาท):</label>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-slate-700 font-medium">ยอดเงินมัดจำ (บาท):</label>
+                        <span class="text-[10px] text-amber-600 font-medium">*ระบบคำนวณมัดจำ 50% ให้อัตโนมัติ</span>
+                    </div>
                     <input type="number" id="inputDepositAmount" placeholder="เช่น 500" 
                            class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs font-bold text-slate-800">
                 </div>
@@ -288,11 +291,19 @@
             initApp(true);
         }
 
-        function toggleDepositModal(show, bookingId = '', currentDeposit = 0) {
+        // ปรับฟังก์ชันเปิด Modal ให้คำนวณและระบุยอดมัดจำ 50% อัตโนมัติเมื่อยังไม่มีการมัดจำ
+        function toggleDepositModal(show, bookingId = '', currentDeposit = 0, totalPrice = 0) {
             const modal = document.getElementById("depositModal");
             if (show) {
                 document.getElementById("modalBookingId").value = bookingId;
-                document.getElementById("inputDepositAmount").value = currentDeposit || '';
+                
+                let depositVal = currentDeposit;
+                // ถ้ายังไม่มีการมัดจำ (มัดจำ = 0) ให้คำนวณ 50% ของยอดบริการรวมให้อัตโนมัติ
+                if ((!depositVal || Number(depositVal) === 0) && totalPrice > 0) {
+                    depositVal = totalPrice * 0.5;
+                }
+                
+                document.getElementById("inputDepositAmount").value = depositVal || '';
                 document.getElementById("inputSlipFile").value = '';
                 modal.classList.remove("hidden");
             } else {
@@ -300,7 +311,6 @@
             }
         }
 
-        // 🚀 Parallel Fetching: ดึงข้อมูลสรุปรายเดือนและข้อมูลประจำวันพร้อมกันเพื่อความเร็วสูงสุด
         async function initApp(forceRefresh = false) {
             const monthFormatted = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
             document.getElementById("calendarMonthTitle").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
@@ -315,7 +325,6 @@
             }
 
             try {
-                // ยิง API แบบขนานคู่กัน
                 const [monthlyRes, dailyRes] = await Promise.all([
                     fetch(`${SCRIPT_URL}?month=${monthFormatted}`, { redirect: "follow" }).then(r => r.json()).catch(() => null),
                     fetch(`${SCRIPT_URL}?date=${selectedDateStr}`, { redirect: "follow" }).then(r => r.json()).catch(() => null)
@@ -378,7 +387,13 @@
 
                 if (dayData && dayData.count > 0) {
                     countText = `${dayData.count} คิว`;
-                    dotColorClass = dayData.totalDeposit > 0 ? "bg-emerald-500" : "bg-amber-500";
+                    if (dayData.totalDeposit >= dayData.totalSales && dayData.totalSales > 0) {
+                        dotColorClass = "bg-pink-400";
+                    } else if (dayData.totalDeposit > 0) {
+                        dotColorClass = "bg-emerald-500";
+                    } else {
+                        dotColorClass = "bg-amber-500";
+                    }
                 }
 
                 grid.innerHTML += `
@@ -397,7 +412,6 @@
             selectedDateStr = dateStr;
             renderCalendar();
             
-            // หากมีแคชไว้แล้ว แสดงทันที
             if (dailyDataCache[dateStr]) {
                 renderReport(dailyDataCache[dateStr]);
             } else {
@@ -525,8 +539,18 @@
 
             if (data.bookings && data.bookings.length > 0) {
                 data.bookings.forEach(b => {
+                    const isFullyPaid = Number(b.depositPrice) >= Number(b.totalPrice) && Number(b.totalPrice) > 0;
                     const isDeposit = Number(b.depositPrice) > 0;
                     const formattedDesc = formatBookingDescription(b.title, b.desc);
+
+                    let statusBadge = '';
+                    if (isFullyPaid) {
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-pink-100 text-pink-700 border border-pink-200">ชำระครบแล้ว ฿${Number(b.depositPrice).toLocaleString()}</span>`;
+                    } else if (isDeposit) {
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">มัดจำแล้ว ฿${Number(b.depositPrice).toLocaleString()}</span>`;
+                    } else {
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">ยังไม่มีมัดจำ</span>`;
+                    }
 
                     container.innerHTML += `
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs">
@@ -535,9 +559,7 @@
                                     <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
                                     ${b.time} น.
                                 </span>
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${isDeposit ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
-                                    ${isDeposit ? 'มัดจำแล้ว ฿' + Number(b.depositPrice).toLocaleString() : 'ยังไม่มีมัดจำ'}
-                                </span>
+                                ${statusBadge}
                             </div>
 
                             <div class="font-bold text-slate-900 text-sm">${b.title}</div>
@@ -550,24 +572,32 @@
                                     <strong class="text-slate-900 text-sm">฿${Number(b.totalPrice).toLocaleString()}</strong>
                                 </div>
                                 <div class="flex justify-between items-center text-slate-500 text-[11px]">
-                                    <span>ชำระมัดจำแล้ว:</span>
-                                    <span class="text-emerald-600 font-semibold">฿${Number(b.depositPrice).toLocaleString()}</span>
+                                    <span>ชำระแล้ว:</span>
+                                    <span class="${isFullyPaid ? 'text-pink-600' : 'text-emerald-600'} font-semibold">฿${Number(b.depositPrice).toLocaleString()}</span>
                                 </div>
                                 <div class="flex justify-between items-center text-slate-500 text-[11px]">
                                     <span>ยอดคงเหลือชำระหน้างาน:</span>
-                                    <span class="text-amber-600 font-bold">฿${(Number(b.totalPrice) - Number(b.depositPrice)).toLocaleString()}</span>
+                                    <span class="text-amber-600 font-bold">฿${Math.max(0, Number(b.totalPrice) - Number(b.depositPrice)).toLocaleString()}</span>
                                 </div>
                             </div>
 
-                            <div class="flex gap-2 pt-2 border-t border-slate-100">
-                                <button onclick="toggleDepositModal(true, '${b.id}', ${b.depositPrice})" 
-                                        class="flex-1 py-2 px-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1">
+                            <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                                <!-- ส่ง totalPrice ไปเพื่อคำนวณมัดจำ 50% อัตโนมัติ -->
+                                <button onclick="toggleDepositModal(true, '${b.id}', ${b.depositPrice}, ${b.totalPrice})" 
+                                        class="flex-1 min-w-[130px] py-2 px-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
                                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                                     <span>กรอกมัดจำ / แนบสลิป</span>
                                 </button>
+
+                                <button onclick="payFullAmount('${b.id}', ${b.totalPrice})" 
+                                        class="flex-1 min-w-[130px] py-2 px-3 bg-pink-300 hover:bg-pink-400 active:scale-95 text-pink-950 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm border border-pink-400/30">
+                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-pink-700"></i>
+                                    <span>ชำระทั้งหมดเรียบร้อย</span>
+                                </button>
+
                                 ${b.slipUrl ? `
                                     <a href="${b.slipUrl}" target="_blank" 
-                                       class="py-2 px-3 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0">
+                                       class="py-2 px-3 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0 shadow-sm">
                                         <i data-lucide="image" class="w-3.5 h-3.5"></i>
                                         <span>ดูสลิปโอนเงิน</span>
                                     </a>
@@ -581,6 +611,40 @@
             }
 
             renderIcons();
+        }
+
+        async function payFullAmount(bookingId, totalPrice) {
+            if (!confirm(`ยืนยันการบันทึกชำระเงินเต็มจำนวน (฿${Number(totalPrice).toLocaleString()} บาท) สำหรับรายการนี้ใช่หรือไม่?`)) {
+                return;
+            }
+
+            const loading = document.getElementById("loadingIndicator");
+            document.getElementById("loadingText").innerText = "กำลังบันทึกการชำระเงินเต็มจำนวน...";
+            loading.classList.remove("hidden");
+
+            try {
+                const payload = {
+                    action: "updateDeposit",
+                    bookingId: bookingId,
+                    depositAmount: totalPrice,
+                    slipBase64: "",
+                    slipFileName: ""
+                };
+
+                const res = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+
+                const json = await res.json();
+                alert(json.message || "บันทึกการชำระเงินเต็มจำนวนเรียบร้อยแล้ว");
+                await initApp(true);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+            } finally {
+                loading.classList.add("hidden");
+            }
         }
 
         async function submitDepositAndSlip() {
