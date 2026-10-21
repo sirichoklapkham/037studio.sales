@@ -706,11 +706,3 @@ function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
-```
-
----
-
-### 🚀 ขั้นตอนนำไป Deploy บน Vercel:
-1. นำไฟล์ `index.html` ไปอัปโหลดขึ้น **GitHub Repository** หรือลากวางบนหน้าเว็บ **Vercel**
-2. นำไฟล์ `Code.gs` ไปวางใน Google Apps Script แล้วทำ Deploy เป็น **Web App** (ตั้งค่า **Execute as: Me**, **Who has access: Anyone**)
-3. นำ URL ที่ได้จาก Google Apps Script มาใส่ที่ปุ่มตั้งค่า (⚙️) ในหน้าเว็บแอป 037Studio ได้เลยครับ
