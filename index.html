@@ -63,7 +63,6 @@
 
         <!-- CALENDAR SECTION CARD -->
         <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
-            <!-- Calendar Header with Month Switcher -->
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-1.5">
                     <i data-lucide="calendar" class="w-4 h-4 text-amber-500"></i>
@@ -89,9 +88,7 @@
             </div>
 
             <!-- Calendar Days Grid -->
-            <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarGrid">
-                <!-- Dynamic Calendar Grid -->
-            </div>
+            <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarGrid"></div>
         </div>
 
         <!-- Loading Indicator -->
@@ -164,15 +161,54 @@
                 </h2>
                 <span id="bookingListCount" class="text-[10px] font-medium text-slate-500">0 รายการ</span>
             </div>
-            <div id="bookingListContainer" class="space-y-2">
-                <!-- Dynamic Booking Cards -->
-            </div>
+            <div id="bookingListContainer" class="space-y-2"></div>
         </div>
 
     </main>
 
+    <!-- DEPOSIT & SLIP UPLOAD MODAL -->
+    <div id="depositModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                    <i data-lucide="credit-card" class="w-4 h-4 text-amber-500"></i>
+                    กรอกมัดจำ & แนบสลิปโอนเงิน
+                </h3>
+                <button onclick="toggleDepositModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <input type="hidden" id="modalBookingId">
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-700 font-medium mb-1">ยอดเงินมัดจำ (บาท):</label>
+                    <input type="number" id="inputDepositAmount" placeholder="เช่น 500" 
+                           class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs font-bold text-slate-800">
+                </div>
+
+                <div>
+                    <label class="block text-slate-700 font-medium mb-1">แนบไฟล์รูปสลิป:</label>
+                    <input type="file" id="inputSlipFile" accept="image/*" 
+                           class="w-full p-2 border border-slate-300 rounded-xl text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+                    <p class="text-[10px] text-slate-400 mt-1">ไฟล์สลิปจะถูกอัปโหลดตรงไปยัง Google Drive โฟลเดอร์สลิปของร้าน</p>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="submitDepositAndSlip()" id="btnSaveDeposit" class="flex-1 py-3 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2">
+                    <span>บันทึกข้อมูล</span>
+                </button>
+                <button onclick="toggleDepositModal(false)" class="py-3 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                    ยกเลิก
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- SETTINGS MODAL -->
-    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden transition-opacity duration-300 flex items-center justify-center p-4">
+    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -223,36 +259,15 @@
     </nav>
 
     <script>
-        // Default URL or LocalStorage
         let SCRIPT_URL = localStorage.getItem("037STUDIO_SCRIPT_URL") || "";
 
-        let currentYear = 2026;
-        let currentMonth = 9; // October (0-indexed: 0=Jan, 9=Oct)
-        let selectedDateStr = "2026-10-21";
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        let selectedDateStr = new Date().toISOString().split('T')[0];
         let monthlyDataCache = {};
         let currentDayBookings = [];
 
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-
-        // Data Mockup เมื่อไม่มี API URL
-        const MOCK_MONTHLY_DATA = {
-            "2026-10-05": { count: 1, totalSales: 2500, totalDeposit: 1000 },
-            "2026-10-12": { count: 2, totalSales: 5000, totalDeposit: 2000 },
-            "2026-10-21": { count: 3, totalSales: 8500, totalDeposit: 3500 },
-            "2026-10-22": { count: 1, totalSales: 3000, totalDeposit: 0 },
-            "2026-10-28": { count: 2, totalSales: 6000, totalDeposit: 3000 }
-        };
-
-        const MOCK_DAILY_BOOKINGS = {
-            "2026-10-21": [
-                { id: "1", time: "09:00 - 12:00", title: "ถ่ายแบบแฟชั่นแบรนด์เสื้อผ้า (คุณเมย์)", desc: "ใช้สตูดิโอโซน A + ไฟสตูดิโอ 2 ชุด", totalPrice: 3500, depositPrice: 1500, depositStatus: "มีมัดจำ" },
-                { id: "2", time: "13:00 - 16:00", title: "ถ่ายวิดีโอสินค้า Podcast (คุณต้อม)", desc: "อัดเสียง + ไฟส่องสว่าง โซน B", totalPrice: 3000, depositPrice: 2000, depositStatus: "มีมัดจำ" },
-                { id: "3", time: "17:00 - 19:00", title: "ถ่ายภาพโปรไฟล์ผู้บริหาร (คุณอนันต์)", desc: "ยังไม่ได้โอนมัดจำ (นัดชำระหน้างาน)", totalPrice: 2000, depositPrice: 0, depositStatus: "ไม่มีมัดจำ" }
-            ],
-            "2026-10-22": [
-                { id: "4", time: "10:00 - 13:00", title: "ถ่ายภาพสินค้าเครื่องสำอาง", desc: "พร็อพแน่น โซน A", totalPrice: 3000, depositPrice: 0, depositStatus: "ไม่มีมัดจำ" }
-            ]
-        };
 
         function toggleSettingsModal(show) {
             const modal = document.getElementById("settingsModal");
@@ -270,15 +285,25 @@
             fetchReportData(selectedDateStr);
         }
 
-        // โหลดข้อมูลปฏิทินของเดือนปัจจุบัน
+        function toggleDepositModal(show, bookingId = '', currentDeposit = 0) {
+            const modal = document.getElementById("depositModal");
+            if (show) {
+                document.getElementById("modalBookingId").value = bookingId;
+                document.getElementById("inputDepositAmount").value = currentDeposit || '';
+                document.getElementById("inputSlipFile").value = '';
+                modal.classList.remove("hidden");
+            } else {
+                modal.classList.add("hidden");
+            }
+        }
+
+        // โหลดสรุปปฏิทินรายเดือน
         async function fetchMonthlySummary() {
             const monthFormatted = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
             document.getElementById("calendarMonthTitle").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
             document.getElementById("monthlyLabel").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
             
             if (!SCRIPT_URL) {
-                // Fallback Mock Data
-                monthlyDataCache = MOCK_MONTHLY_DATA;
                 renderCalendar();
                 calculateMonthlyTotals();
                 return;
@@ -373,7 +398,7 @@
             }
 
             iconSync.classList.add("animate-spin");
-            loadingText.innerText = "กำลังดึงข้อมูลปฏิทิน Google Calendar (sirichoklapkham@gmail.com)...";
+            loadingText.innerText = "กำลังดึงข้อมูลปฏิทิน Google Calendar...";
             loading.classList.remove("hidden");
 
             try {
@@ -399,31 +424,7 @@
             loading.classList.remove("hidden");
 
             if (!SCRIPT_URL) {
-                // Mockup Fallback
-                setTimeout(() => {
-                    const mockList = MOCK_DAILY_BOOKINGS[dateStr] || [];
-                    let sales = 0;
-                    let deposit = 0;
-                    let noDepCount = 0;
-
-                    mockList.forEach(b => {
-                        sales += b.totalPrice;
-                        deposit += b.depositPrice;
-                        if (b.depositPrice === 0) noDepCount++;
-                    });
-
-                    renderReport({
-                        status: "success",
-                        data: {
-                            date: dateStr,
-                            totalBookings: mockList.length,
-                            totalSales: sales,
-                            totalDeposit: deposit,
-                            noDepositCount: noDepCount,
-                            bookings: mockList
-                        }
-                    });
-                }, 300);
+                loading.classList.add("hidden");
                 return;
             }
 
@@ -438,6 +439,50 @@
             }
         }
 
+        // แปลงข้อความรายละเอียดรายละเอียดคิวจองให้อ่านง่าย
+        function formatBookingDescription(title, desc) {
+            let fullText = (title + "\n" + desc).trim();
+            
+            let bookingNo = "";
+            let mainService = "";
+            let subService = "";
+            let phone = "";
+            let name = "";
+            let note = "";
+
+            const bMatch = fullText.match(/หมายเลขการจอง\s*([0-9A-Z]+)/i);
+            if (bMatch) bookingNo = bMatch[1];
+
+            const pMatch = fullText.match(/เบอร์โทรศัพท์\s*[:=]?\s*(\+?[0-9-]+)/i);
+            if (pMatch) phone = pMatch[1];
+
+            const nMatch = fullText.match(/ชื่อเล่น\s*[:=]?\s*([^\n\r]+)/i);
+            if (nMatch) name = nMatch[1].trim();
+
+            const mMatch = fullText.match(/บริการหลัก\s*[:=]?\s*([^\n\r]+)/i);
+            if (mMatch) mainService = mMatch[1].trim();
+
+            const sMatch = fullText.match(/บริการย่อย\s*[:=]?\s*([^\n\r]+)/i);
+            if (sMatch) subService = sMatch[1].trim();
+
+            const remMatch = fullText.match(/หมายเหตุบริการ\s*[:=]?\s*([\s\S]+)/i);
+            if (remMatch) note = remMatch[1].trim();
+
+            if (!bookingNo && !phone && !name && !mainService) {
+                return `<div class="text-[11px] text-slate-600 whitespace-pre-line leading-relaxed">${fullText}</div>`;
+            }
+
+            let html = `<div class="space-y-1.5 text-[11px] text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">`;
+            if (bookingNo) html += `<div class="font-bold text-amber-700">📌 หมายเลขการจอง: #${bookingNo}</div>`;
+            if (name || phone) html += `<div>👤 <strong>ลูกค้า:</strong> ${name || '-'} (${phone || 'ไม่ระบุเบอร์'})</div>`;
+            if (mainService) html += `<div>🎬 <strong>บริการหลัก:</strong> ${mainService}</div>`;
+            if (subService) html += `<div>📸 <strong>บริการย่อย:</strong> ${subService}</div>`;
+            if (note) html += `<div class="text-slate-500 text-[10px] pt-1 border-t border-slate-200 mt-1">📝 <strong>หมายเหตุ:</strong> ${note}</div>`;
+            html += `</div>`;
+
+            return html;
+        }
+
         function renderReport(response) {
             document.getElementById("loadingIndicator").classList.add("hidden");
 
@@ -447,9 +492,9 @@
             }
 
             const data = response.data;
+            currentDayBookings = data.bookings || [];
             document.getElementById("displaySelectedDate").innerText = data.date || selectedDateStr;
 
-            // 1. Banner Update
             const bannerTitle = document.getElementById("bannerTitle");
             const bannerSub = document.getElementById("bannerSub");
 
@@ -461,7 +506,6 @@
                 bannerSub.innerText = `ยอดรวมบริการ ฿${data.totalSales.toLocaleString()} (ได้รับมัดจำแล้ว ฿${data.totalDeposit.toLocaleString()})`;
             }
 
-            // 2. Metrics
             document.getElementById("valTotalSales").innerText = `฿${Number(data.totalSales || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("valTotalBookings").innerText = `${data.totalBookings || 0} คิว`;
 
@@ -473,7 +517,6 @@
             document.getElementById("valNoDepositCount").innerText = `${data.noDepositCount || 0} คิว`;
             document.getElementById("valPendingAmount").innerText = `คงเหลือเก็บหน้างาน ฿${pendingAmt.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
 
-            // 3. Booking Schedule Cards
             const container = document.getElementById("bookingListContainer");
             container.innerHTML = "";
             document.getElementById("bookingListCount").innerText = `${(data.bookings || []).length} รายการ`;
@@ -481,8 +524,10 @@
             if (data.bookings && data.bookings.length > 0) {
                 data.bookings.forEach(b => {
                     const isDeposit = Number(b.depositPrice) > 0;
+                    const formattedDesc = formatBookingDescription(b.title, b.desc);
+
                     container.innerHTML += `
-                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2.5 text-xs">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs">
                             <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                                 <span class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
                                     <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
@@ -492,13 +537,39 @@
                                     ${isDeposit ? 'มัดจำแล้ว ฿' + Number(b.depositPrice).toLocaleString() : 'ยังไม่มีมัดจำ'}
                                 </span>
                             </div>
-                            <div>
-                                <div class="font-bold text-slate-800 text-sm">${b.title}</div>
-                                ${b.desc ? `<div class="text-[11px] text-slate-500 mt-1 bg-slate-50 p-2 rounded-xl border border-slate-100">${b.desc}</div>` : ''}
+
+                            <div class="font-bold text-slate-900 text-sm">${b.title}</div>
+
+                            ${formattedDesc}
+
+                            <div class="space-y-1 pt-1 border-t border-slate-100">
+                                <div class="flex justify-between items-center text-slate-600">
+                                    <span>ยอดบริการทั้งหมด:</span>
+                                    <strong class="text-slate-900 text-sm">฿${Number(b.totalPrice).toLocaleString()}</strong>
+                                </div>
+                                <div class="flex justify-between items-center text-slate-500 text-[11px]">
+                                    <span>ชำระมัดจำแล้ว:</span>
+                                    <span class="text-emerald-600 font-semibold">฿${Number(b.depositPrice).toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-slate-500 text-[11px]">
+                                    <span>ยอดคงเหลือชำระหน้างาน:</span>
+                                    <span class="text-amber-600 font-bold">฿${(Number(b.totalPrice) - Number(b.depositPrice)).toLocaleString()}</span>
+                                </div>
                             </div>
-                            <div class="flex justify-between items-center text-[11px] text-slate-600 pt-1 border-t border-slate-100">
-                                <span>ยอดเต็มบริการ: <strong class="text-slate-900">฿${Number(b.totalPrice).toLocaleString()}</strong></span>
-                                <span class="text-amber-600 font-semibold">ชำระเพิ่มหน้างาน: ฿${(Number(b.totalPrice) - Number(b.depositPrice)).toLocaleString()}</span>
+
+                            <div class="flex gap-2 pt-2 border-t border-slate-100">
+                                <button onclick="toggleDepositModal(true, '${b.id}', ${b.depositPrice})" 
+                                        class="flex-1 py-2 px-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                    <span>กรอกมัดจำ / แนบสลิป</span>
+                                </button>
+                                ${b.slipUrl ? `
+                                    <a href="${b.slipUrl}" target="_blank" 
+                                       class="py-2 px-3 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0">
+                                        <i data-lucide="image" class="w-3.5 h-3.5"></i>
+                                        <span>ดูสลิปโอนเงิน</span>
+                                    </a>
+                                ` : ''}
                             </div>
                         </div>
                     `;
@@ -508,6 +579,63 @@
             }
 
             lucide.createIcons();
+        }
+
+        // ส่งข้อมูลมัดจำและรูปสลิปไปอัปเดตบน Google Sheets & Google Drive
+        async function submitDepositAndSlip() {
+            const bookingId = document.getElementById("modalBookingId").value;
+            const depositAmount = document.getElementById("inputDepositAmount").value;
+            const fileInput = document.getElementById("inputSlipFile");
+
+            if (!SCRIPT_URL) {
+                alert("กรุณาตั้งค่า Google Apps Script Web App URL ก่อนใช้งาน");
+                toggleSettingsModal(true);
+                return;
+            }
+
+            const btnSave = document.getElementById("btnSaveDeposit");
+            btnSave.disabled = true;
+            btnSave.innerHTML = `<div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-slate-900"></div> <span>กำลังบันทึก...</span>`;
+
+            let slipBase64 = "";
+            let slipFileName = "";
+
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                slipFileName = file.name;
+                slipBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            try {
+                const payload = {
+                    action: "updateDeposit",
+                    bookingId: bookingId,
+                    depositAmount: depositAmount,
+                    slipBase64: slipBase64,
+                    slipFileName: slipFileName
+                };
+
+                const res = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+
+                const json = await res.json();
+                alert(json.message || "บันทึกเรียบร้อยแล้ว");
+                toggleDepositModal(false);
+                await fetchMonthlySummary();
+                fetchReportData(selectedDateStr);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = `<span>บันทึกข้อมูล</span>`;
+            }
         }
 
         function handleError(err) {
@@ -521,188 +649,13 @@
             currentMonth = today.getMonth();
             selectedDateStr = today.toISOString().split('T')[0];
 
-            await fetchMonthlySummary();
-            fetchReportData(selectedDateStr);
+            if (!SCRIPT_URL) {
+                toggleSettingsModal(true);
+            } else {
+                await fetchMonthlySummary();
+                fetchReportData(selectedDateStr);
+            }
         };
     </script>
 </body>
 </html>
-```
-
----
-
-### 📄 โค้ดฝั่ง Google Apps Script (`Code.gs`)
-นำโค้ดด้านล่างนี้ไปวางไว้ใน **Google Apps Script** ที่เชื่อมกับ Google Sheet ของร้าน 037Studio ครับ:
-
-```javascript:Google Apps Script Backend:Code.gs
-const CALENDAR_ID = "sirichoklapkham@gmail.com"; 
-
-function doGet(e) {
-  const action = e.parameter.action;
-  const month = e.parameter.month;
-  const date = e.parameter.date;
-
-  if (action === "sync") {
-    return jsonResponse(syncCalendarToSheet());
-  }
-
-  if (month) {
-    return jsonResponse(getMonthlySummary(month));
-  }
-
-  if (date) {
-    return jsonResponse(getBookingData(date));
-  }
-
-  return jsonResponse({ status: "success", message: "037Studio API Ready" });
-}
-
-function syncCalendarToSheet() {
-  const cal = CalendarApp.getCalendarById(CALENDAR_ID);
-  if (!cal) {
-    return { status: "error", message: "ไม่พบปฏิทิน Google Calendar หรือยังไม่ได้ตั้งค่า Permission" };
-  }
-
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Bookings");
-  if (!sheet) {
-    return { status: "error", message: "ไม่พบชีทชื่อ 'Bookings' ใน Google Sheets" };
-  }
-
-  const now = new Date();
-  const startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
-  const endDate = new Date(now.getFullYear(), now.getMonth() + 6, 0);
-
-  const events = cal.getEvents(startDate, endDate);
-  
-  const existingData = sheet.getDataRange().getValues();
-  const existingMap = {};
-  for (let i = 1; i < existingData.length; i++) {
-    existingMap[existingData[i][0]] = i + 1;
-  }
-
-  events.forEach(event => {
-    const id = event.getId();
-    const title = event.getTitle();
-    const desc = event.getDescription() || "";
-    const start = event.getStartTime();
-    const end = event.getEndTime();
-
-    const dateStr = Utilities.formatDate(start, Session.getScriptTimeZone(), "yyyy-MM-dd");
-    const startTimeStr = Utilities.formatDate(start, Session.getScriptTimeZone(), "HH:mm");
-    const endTimeStr = Utilities.formatDate(end, Session.getScriptTimeZone(), "HH:mm");
-
-    const totalPrice = extractAmount(title + " " + desc, ["ยอดเต็ม", "ราคา", "รวม", "฿", "baht"]);
-    const depositPrice = extractAmount(title + " " + desc, ["มัดจำ", "โอนมัดจำ", "deposit"]);
-    const isDeposit = depositPrice > 0 ? "มีมัดจำ" : "ไม่มีมัดจำ";
-
-    const rowData = [
-      id,
-      dateStr,
-      startTimeStr,
-      endTimeStr,
-      title,
-      desc,
-      totalPrice,
-      depositPrice,
-      isDeposit,
-      new Date()
-    ];
-
-    if (existingMap[id]) {
-      sheet.getRange(existingMap[id], 1, 1, rowData.length).setValues([rowData]);
-    } else {
-      sheet.appendRow(rowData);
-    }
-  });
-
-  return { status: "success", message: `ซิงค์ข้อมูลเรียบร้อยแล้ว (${events.length} รายการ)` };
-}
-
-function extractAmount(text, keywords) {
-  for (let kw of keywords) {
-    const reg = new RegExp(kw + "\\s*[:=]?\\s*([0-9,]+)", "i");
-    const match = text.match(reg);
-    if (match && match[1]) {
-      return parseFloat(match[1].replace(/,/g, ''));
-    }
-  }
-  return 0;
-}
-
-function getMonthlySummary(monthStr) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Bookings");
-  if (!sheet) return { status: "success", data: {} };
-  
-  const data = sheet.getDataRange().getValues();
-  const summary = {};
-
-  for (let i = 1; i < data.length; i++) {
-    const [id, date, start, end, title, desc, totalPrice, depositPrice] = data[i];
-    if (!date) continue;
-
-    const dStr = Utilities.formatDate(new Date(date), Session.getScriptTimeZone(), "yyyy-MM-dd");
-    if (dStr.startsWith(monthStr)) {
-      if (!summary[dStr]) {
-        summary[dStr] = { count: 0, totalSales: 0, totalDeposit: 0 };
-      }
-      summary[dStr].count += 1;
-      summary[dStr].totalSales += (Number(totalPrice) || 0);
-      summary[dStr].totalDeposit += (Number(depositPrice) || 0);
-    }
-  }
-
-  return { status: "success", data: summary };
-}
-
-function getBookingData(dateStr) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Bookings");
-  if (!sheet) return { status: "error", message: "ไม่พบชีท Bookings" };
-
-  const data = sheet.getDataRange().getValues();
-  const bookings = [];
-  let totalSales = 0;
-  let totalDeposit = 0;
-  let noDepositCount = 0;
-
-  for (let i = 1; i < data.length; i++) {
-    const [id, date, start, end, title, desc, totalPrice, depositPrice, depositStatus] = data[i];
-    if (!date) continue;
-
-    const dStr = Utilities.formatDate(new Date(date), Session.getScriptTimeZone(), "yyyy-MM-dd");
-    if (dStr === dateStr) {
-      const price = Number(totalPrice) || 0;
-      const deposit = Number(depositPrice) || 0;
-
-      totalSales += price;
-      totalDeposit += deposit;
-      if (deposit === 0) noDepositCount++;
-
-      bookings.push({
-        id: id,
-        time: `${start} - ${end}`,
-        title: title,
-        desc: desc,
-        totalPrice: price,
-        depositPrice: deposit,
-        depositStatus: depositStatus
-      });
-    }
-  }
-
-  return {
-    status: "success",
-    data: {
-      date: dateStr,
-      totalBookings: bookings.length,
-      totalSales: totalSales,
-      totalDeposit: totalDeposit,
-      noDepositCount: noDepositCount,
-      bookings: bookings
-    }
-  };
-}
-
-function jsonResponse(data) {
-  return ContentService.createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
-}
