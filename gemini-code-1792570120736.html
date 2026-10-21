@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>037Studio - Booking & Schedule Check</title>
+
+    <!-- Tailwind CSS & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
+
+    <!-- Top App Bar -->
+    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+        <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
+                    <i data-lucide="camera" class="w-5 h-5 text-amber-500"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base leading-tight">037Studio</h1>
+                    <p class="text-[10px] text-amber-400 font-medium">ระบบตรวจสอบคิวจอง & ยอดมัดจำ</p>
+                </div>
+            </div>
+            <button onclick="syncCalendar()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
+                <i data-lucide="refresh-cw" class="w-4 h-4" id="iconSync"></i>
+                <span class="hidden sm:inline">ดึงข้อมูลปฏิทิน</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+
+        <!-- CALENDAR SECTION CARD -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-1.5">
+                    <i data-lucide="calendar" class="w-4 h-4 text-amber-500"></i>
+                    <h2 class="font-bold text-xs text-slate-900" id="calendarMonthTitle">ตุลาคม 2026</h2>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button onclick="changeMonth(-1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="changeMonth(1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 border-b border-slate-100 pb-1">
+                <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarGrid"></div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden bg-white/90 border border-amber-300 p-3.5 rounded-2xl text-center font-medium text-amber-900 shadow-sm">
+            <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600 mr-2"></div>
+            <span id="loadingText" class="text-xs">กำลังโหลดข้อมูล...</span>
+        </div>
+
+        <!-- HERO DASHBOARD CARD -->
+        <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs text-slate-400 font-medium tracking-wide">ยอดรวมจองวันที่ <span id="displaySelectedDate" class="text-amber-400 font-bold">-</span></span>
+                <span id="valTotalBookings" class="text-[11px] bg-white/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">0 คิว</span>
+            </div>
+            
+            <div class="text-3xl font-extrabold tracking-tight text-white mb-4" id="valTotalSales">฿0.00</div>
+
+            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
+                <div>
+                    <span class="text-slate-400 text-[10px] block">ยอดมัดจำที่ได้รับ</span>
+                    <span id="valTotalDeposit" class="font-bold text-emerald-400 text-sm">฿0.00</span>
+                </div>
+                <div class="border-l border-white/10 pl-3">
+                    <span class="text-slate-400 text-[10px] block">คิวที่ยังไม่มีมัดจำ</span>
+                    <span id="valNoDepositCount" class="font-bold text-amber-400 text-sm">0 คิว</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOOKING SCHEDULE LIST CARD -->
+        <div class="space-y-2">
+            <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5 px-1">
+                <i data-lucide="clock" class="w-4 h-4 text-indigo-500"></i>
+                ตารางนัดหมาย & เวลาเข้าใช้บริการ
+            </h2>
+            <div id="bookingListContainer" class="space-y-2"></div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentYear = 2026;
+        let currentMonth = 9; // October (0-indexed)
+        let selectedDateStr = "2026-10-21";
+        let monthlyDataCache = {};
+
+        const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+        async function fetchMonthlySummary() {
+            const monthFormatted = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+            document.getElementById("calendarMonthTitle").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
+            
+            google.script.run.withSuccessHandler(res => {
+                if (res.status === "success") monthlyDataCache = res.data || {};
+                renderCalendar();
+            }).getMonthlySummary(monthFormatted);
+        }
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            fetchMonthlySummary();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById("calendarGrid");
+            grid.innerHTML = "";
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) grid.innerHTML += `<div class="h-10"></div>`;
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isSelected = (dateKey === selectedDateStr);
+                const dayData = monthlyDataCache[dateKey];
+
+                let countText = dayData && dayData.count > 0 ? `${dayData.count} คิว` : "";
+
+                grid.innerHTML += `
+                    <button onclick="selectCalendarDate('${dateKey}')" 
+                            class="h-11 rounded-xl flex flex-col items-center justify-between p-1 transition border relative ${isSelected ? 'bg-amber-500 text-slate-900 font-bold border-amber-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-100'}">
+                        <span class="text-[11px] leading-none">${day}</span>
+                        ${countText ? `<span class="text-[8px] ${isSelected ? 'text-slate-900 font-extrabold' : 'text-amber-600 font-bold'}">${countText}</span>` : '<span class="text-[8px] text-slate-300">-</span>'}
+                    </button>
+                `;
+            }
+            lucide.createIcons();
+        }
+
+        function selectCalendarDate(dateStr) {
+            selectedDateStr = dateStr;
+            renderCalendar();
+            fetchReportData(dateStr);
+        }
+
+        function syncCalendar() {
+            const iconSync = document.getElementById("iconSync");
+            const loading = document.getElementById("loadingIndicator");
+            iconSync.classList.add("animate-spin");
+            loading.classList.remove("hidden");
+
+            google.script.run.withSuccessHandler(res => {
+                iconSync.classList.remove("animate-spin");
+                loading.classList.add("hidden");
+                alert(res.message);
+                fetchMonthlySummary();
+                fetchReportData(selectedDateStr);
+            }).syncCalendarToSheet();
+        }
+
+        function fetchReportData(dateStr) {
+            document.getElementById("loadingIndicator").classList.remove("hidden");
+            google.script.run.withSuccessHandler(renderReport).getBookingData(dateStr);
+        }
+
+        function renderReport(res) {
+            document.getElementById("loadingIndicator").classList.add("hidden");
+            if (!res || res.status !== "success") return;
+
+            const data = res.data;
+            document.getElementById("displaySelectedDate").innerText = data.date;
+            document.getElementById("valTotalBookings").innerText = `${data.totalBookings} คิว`;
+            document.getElementById("valTotalSales").innerText = `฿${data.totalSales.toLocaleString()}`;
+            document.getElementById("valTotalDeposit").innerText = `฿${data.totalDeposit.toLocaleString()}`;
+            document.getElementById("valNoDepositCount").innerText = `${data.noDepositCount} คิว`;
+
+            const container = document.getElementById("bookingListContainer");
+            container.innerHTML = "";
+
+            if (data.bookings && data.bookings.length > 0) {
+                data.bookings.forEach(b => {
+                    const isDeposit = b.depositPrice > 0;
+                    container.innerHTML += `
+                        <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-xs">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                                    <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+                                    ${b.time} น.
+                                </span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isDeposit ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                                    ${isDeposit ? 'มัดจำแล้ว ฿' + b.depositPrice.toLocaleString() : 'ไม่มีมัดจำ'}
+                                </span>
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-800 text-xs">${b.title}</div>
+                                ${b.desc ? `<div class="text-[11px] text-slate-500 mt-0.5">${b.desc}</div>` : ''}
+                            </div>
+                            <div class="flex justify-between items-center text-[11px] text-slate-600 pt-1 border-t border-slate-50">
+                                <span>ยอดบริการทั้งหมด:</span>
+                                <span class="font-bold text-slate-900">฿${b.totalPrice.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = `<div class="bg-white p-4 rounded-2xl text-center text-xs text-slate-400">ไม่มีคิวจองในวันที่เลือก</div>`;
+            }
+            lucide.createIcons();
+        }
+
+        window.onload = () => {
+            fetchMonthlySummary();
+            fetchReportData(selectedDateStr);
+        };
+    </script>
+</body>
+</html>
