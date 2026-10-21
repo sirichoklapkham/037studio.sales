@@ -258,9 +258,9 @@
     </nav>
 
     <script>
-        // กำหนด Default Web App URL ให้เชื่อมต่ออัตโนมัติเมื่อเปิดจากทุกเครื่อง
+        // กำหนด Web App URL ตัวใหม่เป็นค่าเริ่มต้นสำหรับการเรียกใช้อัตโนมัติจากทุกเครื่อง
         const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCNAyy8zVmnELaWhRqLCvQo0RDUiFd9Ri10ORfSqzzIpL3oodwYsmDuNnYxh_AGck/exec";
-        let SCRIPT_URL = localStorage.getItem("037STUDIO_SCRIPT_URL") || DEFAULT_SCRIPT_URL;
+        let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
