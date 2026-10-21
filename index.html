@@ -15,10 +15,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="037Studio">
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS & Lucide Icons (Async/Defer Loading) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
         body { 
@@ -39,7 +38,7 @@
                     <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" 
                          alt="037Studio Logo" 
                          class="w-full h-full object-cover"
-                         onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'camera\' class=\'w-5 h-5 text-amber-500\'></i>'; lucide.createIcons();">
+                         onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'camera\' class=\'w-5 h-5 text-amber-500\'></i>'; renderIcons();">
                 </div>
                 <div>
                     <h1 class="font-bold text-base leading-tight">037Studio</h1>
@@ -66,7 +65,7 @@
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-1.5">
                     <i data-lucide="calendar" class="w-4 h-4 text-amber-500"></i>
-                    <h2 class="font-bold text-xs text-slate-900" id="calendarMonthTitle">ตุลาคม 2026</h2>
+                    <h2 class="font-bold text-xs text-slate-900" id="calendarMonthTitle">กำลังโหลด...</h2>
                 </div>
                 <div class="flex items-center gap-1">
                     <button onclick="changeMonth(-1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
@@ -92,9 +91,9 @@
         </div>
 
         <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="hidden bg-white/90 border border-amber-300 p-3.5 rounded-2xl text-center font-medium text-amber-900 shadow-sm">
+        <div id="loadingIndicator" class="bg-white/90 border border-amber-300 p-3.5 rounded-2xl text-center font-medium text-amber-900 shadow-sm">
             <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600 mr-2"></div>
-            <span id="loadingText" class="text-xs">กำลังดึงข้อมูลคิวจอง...</span>
+            <span id="loadingText" class="text-xs">กำลังเชื่อมต่อข้อมูลคิวจอง...</span>
         </div>
 
         <!-- ALERT BANNER: Deposit Alert -->
@@ -136,7 +135,7 @@
             <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                 <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
                     <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
-                    สรุปยอดจองประจำเดือน (<span id="monthlyLabel">ตุลาคม 2026</span>)
+                    สรุปยอดจองประจำเดือน (<span id="monthlyLabel">-</span>)
                 </h2>
             </div>
             
@@ -258,17 +257,21 @@
     </nav>
 
     <script>
-        // กำหนด Web App URL ตัวใหม่เป็นค่าเริ่มต้นสำหรับการเรียกใช้อัตโนมัติจากทุกเครื่อง
         const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCNAyy8zVmnELaWhRqLCvQo0RDUiFd9Ri10ORfSqzzIpL3oodwYsmDuNnYxh_AGck/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let selectedDateStr = new Date().toISOString().split('T')[0];
+        
         let monthlyDataCache = {};
-        let currentDayBookings = [];
+        let dailyDataCache = {};
 
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+        function renderIcons() {
+            if (window.lucide) lucide.createIcons();
+        }
 
         function toggleSettingsModal(show) {
             const modal = document.getElementById("settingsModal");
@@ -282,8 +285,7 @@
             SCRIPT_URL = url || DEFAULT_SCRIPT_URL;
             localStorage.setItem("037STUDIO_SCRIPT_URL", SCRIPT_URL);
             toggleSettingsModal(false);
-            fetchMonthlySummary();
-            fetchReportData(selectedDateStr);
+            initApp(true);
         }
 
         function toggleDepositModal(show, bookingId = '', currentDeposit = 0) {
@@ -298,25 +300,42 @@
             }
         }
 
-        async function fetchMonthlySummary() {
+        // 🚀 Parallel Fetching: ดึงข้อมูลสรุปรายเดือนและข้อมูลประจำวันพร้อมกันเพื่อความเร็วสูงสุด
+        async function initApp(forceRefresh = false) {
             const monthFormatted = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
             document.getElementById("calendarMonthTitle").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
             document.getElementById("monthlyLabel").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
-            
+
+            const loading = document.getElementById("loadingIndicator");
+            loading.classList.remove("hidden");
+
+            if (forceRefresh) {
+                monthlyDataCache = {};
+                dailyDataCache = {};
+            }
+
             try {
-                const response = await fetch(`${SCRIPT_URL}?month=${monthFormatted}`, { redirect: "follow" });
-                const res = await response.json();
-                if (res.status === "success") {
-                    monthlyDataCache = res.data || {};
-                } else {
-                    monthlyDataCache = {};
+                // ยิง API แบบขนานคู่กัน
+                const [monthlyRes, dailyRes] = await Promise.all([
+                    fetch(`${SCRIPT_URL}?month=${monthFormatted}`, { redirect: "follow" }).then(r => r.json()).catch(() => null),
+                    fetch(`${SCRIPT_URL}?date=${selectedDateStr}`, { redirect: "follow" }).then(r => r.json()).catch(() => null)
+                ]);
+
+                if (monthlyRes && monthlyRes.status === "success") {
+                    monthlyDataCache = monthlyRes.data || {};
+                }
+                
+                if (dailyRes && dailyRes.status === "success") {
+                    dailyDataCache[selectedDateStr] = dailyRes;
+                    renderReport(dailyRes);
                 }
             } catch (err) {
-                console.warn("Monthly Summary Error: ", err);
-                monthlyDataCache = {};
+                console.warn("Fast Fetch Error:", err);
+            } finally {
+                loading.classList.add("hidden");
+                renderCalendar();
+                calculateMonthlyTotals();
             }
-            renderCalendar();
-            calculateMonthlyTotals();
         }
 
         function calculateMonthlyTotals() {
@@ -335,7 +354,7 @@
             currentMonth += delta;
             if (currentMonth < 0) { currentMonth = 11; currentYear--; }
             else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-            fetchMonthlySummary();
+            initApp(true);
         }
 
         function renderCalendar() {
@@ -371,13 +390,19 @@
                     </button>
                 `;
             }
-            lucide.createIcons();
+            renderIcons();
         }
 
         function selectCalendarDate(dateStr) {
             selectedDateStr = dateStr;
             renderCalendar();
-            fetchReportData(dateStr);
+            
+            // หากมีแคชไว้แล้ว แสดงทันที
+            if (dailyDataCache[dateStr]) {
+                renderReport(dailyDataCache[dateStr]);
+            } else {
+                fetchReportData(dateStr);
+            }
         }
 
         async function syncCalendar() {
@@ -394,8 +419,7 @@
                 const res = await response.json();
                 
                 alert(res.message || "การดึงข้อมูลเสร็จสมบูรณ์");
-                await fetchMonthlySummary();
-                fetchReportData(selectedDateStr);
+                await initApp(true);
 
             } catch (err) {
                 alert("เกิดข้อผิดพลาดในการดึงปฏิทิน: " + (err.message || err));
@@ -407,13 +431,13 @@
 
         async function fetchReportData(dateStr) {
             const loading = document.getElementById("loadingIndicator");
-            const loadingText = document.getElementById("loadingText");
-            loadingText.innerText = "กำลังโหลดข้อมูลรายละเอียด...";
+            document.getElementById("loadingText").innerText = "กำลังโหลดข้อมูลรายละเอียด...";
             loading.classList.remove("hidden");
 
             try {
                 const response = await fetch(`${SCRIPT_URL}?date=${dateStr}`, { redirect: "follow" });
                 const resData = await response.json();
+                dailyDataCache[dateStr] = resData;
                 renderReport(resData);
             } catch (err) {
                 handleError(err);
@@ -468,13 +492,9 @@
         function renderReport(response) {
             document.getElementById("loadingIndicator").classList.add("hidden");
 
-            if (!response || response.status !== "success") {
-                alert((response && response.message) ? response.message : "ไม่พบข้อมูลประจำวันที่เลือก");
-                return;
-            }
+            if (!response || response.status !== "success") return;
 
             const data = response.data;
-            currentDayBookings = data.bookings || [];
             document.getElementById("displaySelectedDate").innerText = data.date || selectedDateStr;
 
             const bannerTitle = document.getElementById("bannerTitle");
@@ -560,7 +580,7 @@
                 container.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center text-xs text-slate-400 border border-slate-200">ไม่มีคิวจองในวันที่เลือก</div>`;
             }
 
-            lucide.createIcons();
+            renderIcons();
         }
 
         async function submitDepositAndSlip() {
@@ -602,8 +622,7 @@
                 const json = await res.json();
                 alert(json.message || "บันทึกเรียบร้อยแล้ว");
                 toggleDepositModal(false);
-                await fetchMonthlySummary();
-                fetchReportData(selectedDateStr);
+                await initApp(true);
 
             } catch (err) {
                 alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
@@ -618,14 +637,8 @@
             alert("ไม่สามารถดึงข้อมูลได้: " + (err.message || err));
         }
 
-        window.onload = async () => {
-            const today = new Date();
-            currentYear = today.getFullYear();
-            currentMonth = today.getMonth();
-            selectedDateStr = today.toISOString().split('T')[0];
-
-            await fetchMonthlySummary();
-            fetchReportData(selectedDateStr);
+        window.onload = () => {
+            initApp();
         };
     </script>
 </body>
