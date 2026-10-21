@@ -5,40 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>037Studio - Mobile Sales & Booking Calendar Audit</title>
 
-    <!-- App Icon & Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
     <link rel="icon" type="image/png" sizes="32x32" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
     <link rel="shortcut icon" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
     
-    <!-- iOS Web App Configurations -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="037Studio">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            -webkit-tap-highlight-color: transparent;
-        }
+        body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
 
-    <!-- Top App Bar -->
     <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
         <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center">
             <div class="flex items-center gap-2.5">
                 <div class="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
                     <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" 
-                         alt="037Studio Logo" 
-                         class="w-full h-full object-cover"
+                         alt="037Studio Logo" class="w-full h-full object-cover"
                          onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'camera\' class=\'w-5 h-5 text-amber-500\'></i>'; lucide.createIcons();">
                 </div>
                 <div>
@@ -58,10 +49,8 @@
         </div>
     </header>
 
-    <!-- Main Container -->
     <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
 
-        <!-- CALENDAR SECTION CARD -->
         <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
             <div class="flex justify-between items-center">
                 <div class="flex items-center gap-1.5">
@@ -82,22 +71,18 @@
                 </div>
             </div>
 
-            <!-- Calendar Days Header -->
             <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 border-b border-slate-100 pb-1">
                 <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
             </div>
 
-            <!-- Calendar Days Grid -->
             <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarGrid"></div>
         </div>
 
-        <!-- Loading Indicator -->
         <div id="loadingIndicator" class="hidden bg-white/90 border border-amber-300 p-3.5 rounded-2xl text-center font-medium text-amber-900 shadow-sm">
             <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600 mr-2"></div>
             <span id="loadingText" class="text-xs">กำลังดึงข้อมูลคิวจอง...</span>
         </div>
 
-        <!-- ALERT BANNER: Deposit Alert -->
         <div id="depositStatusBanner" class="rounded-2xl p-3.5 border transition-all duration-300 flex items-start gap-3 shadow-sm bg-emerald-50 border-emerald-200 text-emerald-800">
             <i data-lucide="shield-check" class="w-5 h-5 text-emerald-500 shrink-0"></i>
             <div class="text-xs">
@@ -106,7 +91,6 @@
             </div>
         </div>
 
-        <!-- HERO DASHBOARD CARD -->
         <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
             <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
             
@@ -131,7 +115,6 @@
             </div>
         </div>
 
-        <!-- QUICK AUDIT SUMMARY CARD -->
         <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
             <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                 <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
@@ -152,7 +135,6 @@
             </div>
         </div>
 
-        <!-- BOOKING SCHEDULE LIST CARD -->
         <div class="space-y-2">
             <div class="flex justify-between items-center px-1">
                 <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
@@ -166,7 +148,6 @@
 
     </main>
 
-    <!-- DEPOSIT & SLIP UPLOAD MODAL -->
     <div id="depositModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -207,7 +188,6 @@
         </div>
     </div>
 
-    <!-- SETTINGS MODAL -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -225,7 +205,6 @@
                     <label class="block text-slate-700 font-medium mb-1">Google Apps Script Web App URL:</label>
                     <input type="url" id="inputScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" 
                            class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs">
-                    <p class="text-[10px] text-slate-400 mt-1">นำ Web App URL ที่ได้จากการ Deploy Google Apps Script มาวางที่นี่เพื่อเชื่อมต่อข้อมูลจริง</p>
                 </div>
             </div>
 
@@ -240,7 +219,6 @@
         </div>
     </div>
 
-    <!-- Mobile Bottom Navigation Bar -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
         <div class="max-w-md mx-auto h-16 flex justify-around items-center px-2">
             <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex flex-col items-center gap-1 text-amber-600">
@@ -297,7 +275,6 @@
             }
         }
 
-        // โหลดสรุปปฏิทินรายเดือน
         async function fetchMonthlySummary() {
             const monthFormatted = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
             document.getElementById("calendarMonthTitle").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
@@ -439,7 +416,6 @@
             }
         }
 
-        // แปลงข้อความรายละเอียดรายละเอียดคิวจองให้อ่านง่าย
         function formatBookingDescription(title, desc) {
             let fullText = (title + "\n" + desc).trim();
             
@@ -581,7 +557,6 @@
             lucide.createIcons();
         }
 
-        // ส่งข้อมูลมัดจำและรูปสลิปไปอัปเดตบน Google Sheets & Google Drive
         async function submitDepositAndSlip() {
             const bookingId = document.getElementById("modalBookingId").value;
             const depositAmount = document.getElementById("inputDepositAmount").value;
