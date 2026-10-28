@@ -69,6 +69,14 @@
                 </div>
             </div>
 
+            <div id="stRecHistoryRow" class="hidden bg-indigo-50 border border-indigo-200 text-indigo-900 p-3 rounded-2xl text-xs space-y-0.5">
+                <div class="font-bold flex items-center gap-1 text-indigo-700">
+                    <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                    <span>ประวัติการปรับเลื่อนวัน/เวลา:</span>
+                </div>
+                <div id="stRecHistoryText" class="text-[11px] font-mono text-indigo-800 whitespace-pre-line pl-4"></div>
+            </div>
+
             <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
                 <div class="flex justify-between text-slate-600">
                     <span>ยอดบริการรวมทั้งหมด:</span>
@@ -599,7 +607,7 @@
     </div>
 
     <script>
-        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKX-CwRsb4E_d8eM7IzrAjR1f_sammQFRwZHlIBZMtqP9OfeDOmPUqvhL6QKJxdPXT/exec";
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5l9ezDijRbDCdzDyYHBvXJOIOB-i-DDshoqFHs7yYKoJnzBHkadvFPT8CUlHHmEOZ/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentTab = "studio";
@@ -1032,7 +1040,7 @@
             const total = Number(b.totalPrice || 0);
             const deposit = Number(b.depositPrice || 0);
             const balance = Math.max(0, total - deposit);
-            const formattedDate = formatDateToDDMMYYYY(selectedDateStr);
+            const formattedDate = formatDateToDDMMYYYY(b.date || selectedDateStr);
             const receiptUrl = getReceiptPublicUrl(b.id);
 
             return `📌 ใบสรุปยืนยันการจอง 037Studio
@@ -1309,7 +1317,6 @@
             return html;
         }
 
-        // คลีนประวัติการเลื่อนเวลาไม่ให้มีสตริง Date ยาวๆ โผล่มา
         function cleanHistoryText(rawHistoryText) {
             if (!rawHistoryText) return "";
             return rawHistoryText
@@ -1372,7 +1379,6 @@
                         statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">ยังไม่มีมัดจำ</span>`;
                     }
 
-                    // สร้างกล่องสรุปย้ายเวลาสวยๆ อ่านง่าย
                     let historyHtml = "";
                     if (isRescheduled) {
                         const historyMatch = b.desc.match(/\[ปรับเลื่อนเวลาแล้ว\][\s\S]*/);
@@ -1458,6 +1464,7 @@
             renderIcons();
         }
 
+        // ตรวจสอบใบจองสาธารณะ ค้นหาด้วย Booking ID จากทุกวันในระบบ
         async function checkPublicReceiptMode() {
             const urlParams = new URLSearchParams(window.location.search);
             const receiptId = urlParams.get('receipt');
@@ -1468,17 +1475,11 @@
                 document.getElementById("standaloneReceipt").classList.remove("hidden");
 
                 try {
-                    const todayStr = new Date().toISOString().split('T')[0];
-                    const res = await fetch(`${SCRIPT_URL}?type=${type}&date=${todayStr}`, { redirect: "follow" }).then(r => r.json());
+                    const res = await fetch(`${SCRIPT_URL}?action=getBookingById&bookingId=${receiptId}&type=${type}`, { redirect: "follow" }).then(r => r.json());
                     
-                    let targetBooking = null;
-                    if (res && res.data && res.data.bookings) {
-                        targetBooking = res.data.bookings.find(b => String(b.id) === String(receiptId));
-                    }
-
-                    if (targetBooking) {
-                        standaloneBookingObj = targetBooking;
-                        renderStandaloneReceipt(targetBooking, res.data.date);
+                    if (res && res.status === "success" && res.data) {
+                        standaloneBookingObj = res.data;
+                        renderStandaloneReceipt(res.data);
                     } else {
                         document.getElementById("standaloneReceiptCard").innerHTML = `
                             <div class="text-center p-6 space-y-3">
@@ -1497,12 +1498,12 @@
             return false;
         }
 
-        function renderStandaloneReceipt(b, dateStr) {
+        function renderStandaloneReceipt(b) {
             const bNo = b.title.match(/#([0-9A-Z]+)/i);
             document.getElementById("stRecBookingNo").innerText = bNo ? `#${bNo[1]}` : `#${b.id.substring(0, 8)}`;
             
             document.getElementById("stRecTime").innerText = `${b.time} น.`;
-            document.getElementById("stRecDate").innerText = formatDateToDDMMYYYY(dateStr || selectedDateStr);
+            document.getElementById("stRecDate").innerText = formatDateToDDMMYYYY(b.date);
 
             const nameMatch = (b.title + "\n" + b.desc).match(/(?:ชื่อ|ชื่อเล่น)\s*[:=]?\s*([^\n\r]+)/i);
             document.getElementById("stRecCustName").innerText = nameMatch ? nameMatch[1].trim() : b.title;
@@ -1517,6 +1518,18 @@
                 document.getElementById("stRecLocation").innerText = b.location;
             } else {
                 document.getElementById("stRecLocationRow").classList.add("hidden");
+            }
+
+            // แสดงประวัติย้ายเวลาบนใบจองออนไลน์
+            if (b.desc && b.desc.includes("[ปรับเลื่อนเวลาแล้ว]")) {
+                const historyMatch = b.desc.match(/\[ปรับเลื่อนเวลาแล้ว\][\s\S]*/);
+                if (historyMatch) {
+                    const cleanedHistory = cleanHistoryText(historyMatch[0]);
+                    document.getElementById("stRecHistoryRow").classList.remove("hidden");
+                    document.getElementById("stRecHistoryText").innerText = cleanedHistory;
+                }
+            } else {
+                document.getElementById("stRecHistoryRow").classList.add("hidden");
             }
 
             const total = Number(b.totalPrice || 0);
