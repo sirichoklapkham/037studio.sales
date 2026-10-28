@@ -64,7 +64,7 @@
                     <strong class="text-slate-800 text-right max-w-[200px]" id="stRecPackage">-</strong>
                 </div>
                 <div class="flex justify-between border-b border-slate-50 pb-1.5" id="stRecLocationRow">
-                    <span class="text-slate-400 text-[11px]">สถานที่:</span>
+                    <span class="text-slate-400 text-[11px]">โน้ต/คำอธิบาย:</span>
                     <strong class="text-slate-800 text-right max-w-[200px]" id="stRecLocation">-</strong>
                 </div>
             </div>
@@ -135,6 +135,18 @@
 
         <!-- Main Container -->
         <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+
+            <!-- OWNER CONTROL PANEL (สำหรับเจ้าของร้านแชร์ลิงก์ให้พนักงาน) -->
+            <div id="ownerShareStaffPanel" class="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex justify-between items-center text-xs text-amber-900 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                    <span><strong>เจ้าของร้าน:</strong> แชร์ลิงก์ให้พนักงานควบคุม</span>
+                </div>
+                <button onclick="copyStaffModeLink()" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-[11px] transition shadow-sm shrink-0 flex items-center gap-1">
+                    <i data-lucide="copy" class="w-3 h-3"></i>
+                    <span>คัดลอกลิงก์</span>
+                </button>
+            </div>
 
             <!-- CALENDAR SECTION CARD -->
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
@@ -229,7 +241,7 @@
             <div class="flex justify-between items-center px-1">
                 <button onclick="toggleAddBookingModal(true)" class="w-full py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-2xl text-xs transition flex items-center justify-center gap-2 shadow-md">
                     <i data-lucide="calendar-plus" class="w-4 h-4"></i>
-                    <span>+ ลงคิวจองใหม่ให้ลูกค้า (บันทึกลงปฏิทิน)</span>
+                    <span>+ กรอกคิวสำหรับลูกค้า Walk in ที่หน้าร้าน</span>
                 </button>
             </div>
 
@@ -247,7 +259,7 @@
 
         </main>
 
-        <!-- Modal เพิ่มคิวจองใหม่ (Add Booking Modal) -->
+        <!-- Modal เพิ่มคิวจองใหม่ (Walk in Modal) -->
         <div id="addBookingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -263,12 +275,12 @@
                 <form id="addBookingForm" onsubmit="submitNewBooking(event)" class="space-y-3 text-xs">
                     <div>
                         <label class="block text-slate-700 font-medium mb-1">ชื่อลูกค้า / ชื่อเล่น <span class="text-rose-500">*</span></label>
-                        <input type="text" id="addCustName" required placeholder="เช่น คุณปลา" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <input type="text" id="addCustName" required value="ลูกค้า Walk in ไม่ทราบชื่อ" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-medium">
                     </div>
 
                     <div>
                         <label class="block text-slate-700 font-medium mb-1">เบอร์โทรศัพท์</label>
-                        <input type="tel" id="addCustPhone" placeholder="เช่น 0956713869" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono">
+                        <input type="text" id="addCustPhone" value="ไม่มีเบอร์ติดต่อ" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -288,8 +300,8 @@
                     </div>
 
                     <div>
-                        <label class="block text-slate-700 font-medium mb-1">สถานที่ / สาขา</label>
-                        <input type="text" id="addLocation" placeholder="เช่น 037Studio ขอนแก่น" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <label class="block text-slate-700 font-medium mb-1">คำอธิบายแทน ข้อมูลเพิ่มเติม ที่พนักงานโน้ตลงไปได้</label>
+                        <input type="text" id="addLocation" placeholder="เช่น ชำระเงินสดหน้าร้าน / ลูกค้าขอไฟล์เพิ่ม" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">
@@ -350,7 +362,7 @@
                             <strong class="text-slate-800 text-right max-w-[180px]" id="recPackage">แพ็กเกจถ่ายภาพ Studio</strong>
                         </div>
                         <div class="flex justify-between border-b border-slate-50 pb-1.5" id="recLocationRow">
-                            <span class="text-slate-400 text-[11px]">สถานที่:</span>
+                            <span class="text-slate-400 text-[11px]">โน้ต/คำอธิบาย:</span>
                             <strong class="text-slate-800 text-right max-w-[180px]" id="recLocation">037Studio ขอนแก่น</strong>
                         </div>
                     </div>
@@ -529,6 +541,15 @@
             return `${baseUrl}?receipt=${bookingId}&type=${currentTab}`;
         }
 
+        // คัดลอกลิงก์โหมดพนักงานส่งให้พนักงาน
+        function copyStaffModeLink() {
+            const baseUrl = window.location.origin + window.location.pathname;
+            const staffUrl = `${baseUrl}?mode=staff`;
+            navigator.clipboard.writeText(staffUrl).then(() => {
+                alert("คัดลอกลิงก์โหมดพนักงานเรียบร้อยแล้ว!\nสามารถนำไปส่งให้พนักงานร้านใช้งานได้ทันที:\n" + staffUrl);
+            });
+        }
+
         function checkStaffModeFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('mode') === 'staff') {
@@ -550,6 +571,7 @@
         function applyStaffModeUI() {
             const ownerDash = document.getElementById("ownerDashboardCard");
             const ownerMonth = document.getElementById("ownerMonthlySummaryCard");
+            const ownerPanel = document.getElementById("ownerShareStaffPanel");
             const btnSet = document.getElementById("btnSettings");
             const badgeStaff = document.getElementById("badgeStaffMode");
             const tabBtnStaff = document.getElementById("tabBtnStaff");
@@ -557,12 +579,14 @@
             if (isStaffMode) {
                 ownerDash.classList.add("hidden");
                 ownerMonth.classList.add("hidden");
+                ownerPanel.classList.add("hidden");
                 btnSet.classList.add("hidden");
                 badgeStaff.classList.remove("hidden");
                 tabBtnStaff.className = "flex flex-col items-center gap-1 text-emerald-600 font-bold";
             } else {
                 ownerDash.classList.remove("hidden");
                 ownerMonth.classList.remove("hidden");
+                ownerPanel.classList.remove("hidden");
                 btnSet.classList.remove("hidden");
                 badgeStaff.classList.add("hidden");
                 tabBtnStaff.className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700";
@@ -600,13 +624,14 @@
             const modal = document.getElementById("addBookingModal");
             if (show) {
                 document.getElementById("addBookingDate").value = selectedDateStr;
+                document.getElementById("addCustName").value = "ลูกค้า Walk in ไม่ทราบชื่อ";
+                document.getElementById("addCustPhone").value = "ไม่มีเบอร์ติดต่อ";
                 modal.classList.remove("hidden");
             } else {
                 modal.classList.add("hidden");
             }
         }
 
-        // --- แก้ไขฟังก์ชันบันทึกคิวจองใหม่ ป้องกัน CORS (Failed to fetch) ---
         async function submitNewBooking(event) {
             event.preventDefault();
             const btn = document.getElementById("btnSubmitNewBooking");
@@ -616,8 +641,8 @@
             const payload = {
                 action: "addBooking",
                 type: currentTab,
-                name: document.getElementById("addCustName").value.trim(),
-                phone: document.getElementById("addCustPhone").value.trim(),
+                name: document.getElementById("addCustName").value.trim() || "ลูกค้า Walk in ไม่ทราบชื่อ",
+                phone: document.getElementById("addCustPhone").value.trim() || "ไม่มีเบอร์ติดต่อ",
                 date: document.getElementById("addBookingDate").value,
                 time: document.getElementById("addBookingTime").value.trim(),
                 packageName: document.getElementById("addPackageName").value.trim(),
@@ -627,7 +652,6 @@
             };
 
             try {
-                // ส่งข้อมูลแบบ text/plain เพื่อเลี่ยงการติด CORS Preflight Block
                 await fetch(SCRIPT_URL, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -992,7 +1016,7 @@
             
             if (customerName || phone) html += `<div>👤 <strong>ลูกค้า:</strong> ${customerName || '-'} (${phone || 'ไม่ระบุเบอร์'})${line ? ` | LINE: ${line}` : ''}</div>`;
             if (jobType) html += `<div>📸 <strong>ประเภทงาน:</strong> ${jobType}</div>`;
-            if (placeName) html += `<div>📍 <strong>สถานที่:</strong> ${placeName} ${mapUrl ? `<a href="${mapUrl}" target="_blank" class="text-indigo-600 underline text-[10px] ml-1">[ดูแผนที่]</a>` : ''}</div>`;
+            if (placeName) html += `<div>📍 <strong>โน้ต/คำอธิบาย:</strong> ${placeName} ${mapUrl ? `<a href="${mapUrl}" target="_blank" class="text-indigo-600 underline text-[10px] ml-1">[ดูแผนที่]</a>` : ''}</div>`;
             if (note) html += `<div class="text-slate-500 text-[10px] pt-1 border-t border-slate-200 mt-1">📝 <strong>หมายเหตุ:</strong> ${note}</div>`;
             if (bookingDocUrl) html += `<div class="pt-1"><a href="${bookingDocUrl}" target="_blank" class="text-amber-700 font-bold underline text-[10px] flex items-center gap-1"><i data-lucide="file-text" class="w-3 h-3"></i> ลิงก์ใบจองเอกสาร</a></div>`;
 
