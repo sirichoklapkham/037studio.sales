@@ -1,0 +1,304 @@
+const STUDIO_CALENDAR_ID = "sirichoklapkham@gmail.com"; 
+const PHOTOBOOTH_CALENDAR_ID = "d9cd9da858e8b87a9574b8ceeb39d0edfec8aab7ae0e24be967990fd8f13da47@group.calendar.google.com";
+const SLIP_FOLDER_ID = "1GW4DYqiRuZIGRv-cuHadESqvs4r_RM0G";
+
+function setupDrivePermissions() {
+  const folder = DriveApp.getFolderById(SLIP_FOLDER_ID);
+  const tempFile = folder.createFile("temp.txt", "permission test");
+  tempFile.setTrashed(true);
+  Logger.log("Drive Permission Granted: " + folder.getName());
+}
+
+function doGet(e) {
+  const action = e.parameter.action;
+  const type = e.parameter.type || "studio"; // "studio" หรือ "photobooth"
+  const month = e.parameter.month;
+  const date = e.parameter.date;
+
+  if (action === "sync") return jsonResponse(syncAllCalendars());
+  if (month) return jsonResponse(getMonthlySummary(month, type));
+  if (date) return jsonResponse(getBookingData(date, type));
+
+  return jsonResponse({ status: "success", message: "037Studio & PhotoBooth API Ready" });
+}
+
+function doPost(e) {
+  try {
+    const postData = JSON.parse(e.postData.contents);
+    if (postData.action === "updateDeposit") {
+      return jsonResponse(updateDepositAndSlip(postData));
+    }
+  } catch (err) {
+    return jsonResponse({ status: "error", message: err.toString() });
+  }
+}
+
+function jsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ซิงค์ปฏิทินแยกเป็น 2 ชีท: "Bookings_Studio" และ "Bookings_PhotoBooth"
+function syncAllCalendars() {
+  try {
+    const studioRes = syncSingleCalendar(STUDIO_CALENDAR_ID, "Bookings_Studio");
+    const pbRes = syncSingleCalendar(PHOTOBOOTH_CALENDAR_ID, "Bookings_PhotoBooth");
+
+    return { 
+      status: "success", 
+      message: `ซิงค์สำเร็จ! (Studio: ${studioRes.count} รายการ, PhotoBooth: ${pbRes.count} รายการ)` 
+    };
+  } catch (err) {
+    return { status: "error", message: err.toString() };
+  }
+}
+
+function syncSingleCalendar(calendarId, sheetName) {
+  const cal = CalendarApp.getCalendarById(calendarId);
+  if (!cal) return { count: 0 };
+
+  let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet(sheetName);
+    sheet.appendRow([
+      "Booking ID", "Date", "Start Time", "End Time", 
+      "Title", "Details", "Total Price", "Deposit Amount", 
+      "Deposit Status", "Slip URL", "Location", "Last Synced"
+    ]);
+  }
+
+  const now = new Date();
+  const startDate = new Date(now.getFullYear(), now.getMonth() - 2, 1);
+  const endDate = new Date(now.getFullYear(), now.getMonth() + 6, 0);
+
+  const events = cal.getEvents(startDate, endDate);
+  const existingData = sheet.getDataRange().getValues();
+  const existingMap = {};
+
+  for (let i = 1; i < existingData.length; i++) {
+    if (existingData[i][0]) existingMap[existingData[i][0]] = i + 1;
+  }
+
+  events.forEach(event => {
+    const id = event.getId();
+    const title = event.getTitle() || "ไม่ระบุชื่อ";
+    const desc = event.getDescription() || "";
+    const location = event.getLocation() || "";
+    const start = event.getStartTime();
+    const end = event.getEndTime();
+
+    const dateStr = Utilities.formatDate(start, Session.getScriptTimeZone(), "yyyy-MM-dd");
+    const startTimeStr = Utilities.formatDate(start, Session.getScriptTimeZone(), "HH:mm");
+    const endTimeStr = Utilities.formatDate(end, Session.getScriptTimeZone(), "HH:mm");
+
+    // สกัดราคารวมและเงินมัดจำ
+    let totalPrice = extractAmount(desc, ["ยอดทั้งหมด", "ยอดรวม", "ราคา"]);
+    if (totalPrice === 0) totalPrice = extractAmount(title + "\n" + desc);
+
+    let depositPrice = 0;
+    let slipUrl = "";
+
+    if (existingMap[id]) {
+      depositPrice = existingData[existingMap[id] - 1][7] || 0;
+      slipUrl = existingData[existingMap[id] - 1][9] || "";
+    } else {
+      depositPrice = extractAmount(desc, ["มัดจำแล้ว", "โอนมัดจำ", "มัดจำ", "deposit"]);
+    }
+
+    const isDeposit = depositPrice > 0 ? (depositPrice >= totalPrice && totalPrice > 0 ? "ชำระครบแล้ว" : "มีมัดจำ") : "ไม่มีมัดจำ";
+
+    const rowData = [
+      id,
+      dateStr,
+      startTimeStr,
+      endTimeStr,
+      title,
+      desc,
+      totalPrice,
+      depositPrice,
+      isDeposit,
+      slipUrl,
+      location,
+      Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss")
+    ];
+
+    if (existingMap[id]) {
+      sheet.getRange(existingMap[id], 1, 1, rowData.length).setValues([rowData]);
+    } else {
+      sheet.appendRow(rowData);
+    }
+  });
+
+  return { count: events.length };
+}
+
+function extractAmount(text, keywords) {
+  if (!text) return 0;
+  
+  if (keywords && keywords.length > 0) {
+    for (let kw of keywords) {
+      const reg = new RegExp(kw + "\\s*[:=]?\\s*([0-9,]+)", "i");
+      const match = text.match(reg);
+      if (match && match[1]) return parseFloat(match[1].replace(/,/g, ''));
+    }
+  }
+
+  const patterns = [
+    /([0-9,]+)\s*(?:\.-|.-|บาท|baht)/i,
+    /(?:ราคา|ยอด|บริการย่อย|รวม|฿)\s*[:=]?\s*([0-9,]+)/i,
+    /([0-9,]+)\.-/
+  ];
+
+  for (let reg of patterns) {
+    const match = text.match(reg);
+    if (match && match[1]) {
+      const val = parseFloat(match[1].replace(/,/g, ''));
+      if (val > 0) return val;
+    }
+  }
+
+  return 0;
+}
+
+function updateDepositAndSlip(data) {
+  try {
+    const sheetName = data.type === "photobooth" ? "Bookings_PhotoBooth" : "Bookings_Studio";
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    if (!sheet) return { status: "error", message: `ไม่พบชีท ${sheetName}` };
+
+    const rows = sheet.getDataRange().getValues();
+    let targetRow = -1;
+
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][0]) === String(data.bookingId)) {
+        targetRow = i + 1;
+        break;
+      }
+    }
+
+    if (targetRow === -1) {
+      return { status: "error", message: "ไม่พบรายการจองนี้ในระบบ" };
+    }
+
+    let slipUrl = rows[targetRow - 1][9] || "";
+
+    if (data.slipBase64 && data.slipFileName) {
+      let folder;
+      try {
+        folder = DriveApp.getFolderById(SLIP_FOLDER_ID);
+      } catch (fErr) {
+        const folderName = "037Studio_Slips";
+        const folders = DriveApp.getFoldersByName(folderName);
+        folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
+      }
+
+      const contentType = data.slipBase64.substring(5, data.slipBase64.indexOf(';base64'));
+      const bytes = Utilities.base64Decode(data.slipBase64.substr(data.slipBase64.indexOf('base64,') + 7));
+      const blob = Utilities.newBlob(bytes, contentType, `Slip_${data.bookingId}_${data.slipFileName}`);
+      const file = folder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+      slipUrl = file.getUrl();
+    }
+
+    const depositAmt = Number(data.depositAmount) || 0;
+    const totalPrice = Number(rows[targetRow - 1][6]) || 0;
+    const isDeposit = depositAmt >= totalPrice && totalPrice > 0 ? "ชำระครบแล้ว" : (depositAmt > 0 ? "มีมัดจำ" : "ไม่มีมัดจำ");
+
+    sheet.getRange(targetRow, 8).setValue(depositAmt);
+    sheet.getRange(targetRow, 9).setValue(isDeposit);
+    sheet.getRange(targetRow, 10).setValue(slipUrl);
+
+    return { status: "success", message: "บันทึกยอดมัดจำเรียบร้อยแล้ว", slipUrl: slipUrl };
+  } catch (err) {
+    return { status: "error", message: err.toString() };
+  }
+}
+
+function getMonthlySummary(monthStr, type) {
+  try {
+    const sheetName = type === "photobooth" ? "Bookings_PhotoBooth" : "Bookings_Studio";
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    if (!sheet) return { status: "success", data: {} };
+
+    const data = sheet.getDataRange().getValues();
+    const summary = {};
+
+    for (let i = 1; i < data.length; i++) {
+      const dateVal = data[i][1];
+      const totalPrice = Number(data[i][6]) || 0;
+      const depositPrice = Number(data[i][7]) || 0;
+
+      if (!dateVal) continue;
+      let dStr = dateVal instanceof Date ? Utilities.formatDate(dateVal, Session.getScriptTimeZone(), "yyyy-MM-dd") : String(dateVal).trim();
+
+      if (dStr.startsWith(monthStr)) {
+        if (!summary[dStr]) summary[dStr] = { count: 0, totalSales: 0, totalDeposit: 0 };
+        summary[dStr].count += 1;
+        summary[dStr].totalSales += totalPrice;
+        summary[dStr].totalDeposit += depositPrice;
+      }
+    }
+    return { status: "success", data: summary };
+  } catch (err) {
+    return { status: "error", message: err.toString() };
+  }
+}
+
+function getBookingData(dateStr, type) {
+  try {
+    const sheetName = type === "photobooth" ? "Bookings_PhotoBooth" : "Bookings_Studio";
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    if (!sheet) return { status: "error", message: `ไม่พบชีท ${sheetName}` };
+
+    const data = sheet.getDataRange().getValues();
+    const bookings = [];
+    let totalSales = 0;
+    let totalDeposit = 0;
+    let noDepositCount = 0;
+
+    for (let i = 1; i < data.length; i++) {
+      const [id, dateVal, start, end, title, desc, totalPrice, depositPrice, depositStatus, slipUrl, location] = data[i];
+      if (!dateVal) continue;
+
+      let dStr = dateVal instanceof Date ? Utilities.formatDate(dateVal, Session.getScriptTimeZone(), "yyyy-MM-dd") : String(dateVal).trim();
+
+      if (dStr === dateStr) {
+        const price = Number(totalPrice) || 0;
+        const deposit = Number(depositPrice) || 0;
+
+        totalSales += price;
+        totalDeposit += deposit;
+        if (deposit === 0) noDepositCount++;
+
+        let startStr = start instanceof Date ? Utilities.formatDate(start, Session.getScriptTimeZone(), "HH:mm") : String(start);
+        let endStr = end instanceof Date ? Utilities.formatDate(end, Session.getScriptTimeZone(), "HH:mm") : String(end);
+
+        bookings.push({
+          id: String(id),
+          time: `${startStr} - ${endStr}`,
+          title: String(title || ''),
+          desc: String(desc || ''),
+          location: String(location || ''),
+          totalPrice: price,
+          depositPrice: deposit,
+          depositStatus: String(depositStatus || ''),
+          slipUrl: String(slipUrl || '')
+        });
+      }
+    }
+
+    return {
+      status: "success",
+      data: {
+        date: dateStr,
+        totalBookings: bookings.length,
+        totalSales: totalSales,
+        totalDeposit: totalDeposit,
+        noDepositCount: noDepositCount,
+        bookings: bookings
+      }
+    };
+  } catch (err) {
+    return { status: "error", message: err.toString() };
+  }
+}
