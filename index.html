@@ -30,10 +30,9 @@
 </head>
 <body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
 
-    <!-- STANDALONE PUBLIC RECEIPT VIEW (สำหรับลูกค้าเปิดผ่านลิงก์เฉพาะงาน) -->
+    <!-- STANDALONE PUBLIC RECEIPT VIEW -->
     <div id="standaloneReceipt" class="hidden min-h-screen flex items-center justify-center p-4 bg-slate-100">
         <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-xl space-y-4 border border-slate-200" id="standaloneReceiptCard">
-            <!-- Header -->
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2.5">
                     <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" class="w-10 h-10 rounded-full object-cover border border-amber-500/30">
@@ -45,14 +44,12 @@
                 <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono" id="stRecBookingNo">#BOOKING</span>
             </div>
 
-            <!-- เวลาและวันที่นัดหมาย -->
             <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 text-white p-4 rounded-2xl text-center space-y-1 shadow-md">
                 <span class="text-[10px] text-amber-300 font-medium block">⏰ เวลาเข้าใช้บริการ / นัดหมาย</span>
                 <div class="text-2xl font-extrabold text-amber-400 tracking-tight" id="stRecTime">00:00 - 00:00 น.</div>
                 <div class="text-xs font-bold text-slate-200" id="stRecDate">DD-MM-YYYY</div>
             </div>
 
-            <!-- ข้อมูลลูกค้า & บริการ -->
             <div class="space-y-2 text-xs">
                 <div class="flex justify-between border-b border-slate-50 pb-1.5">
                     <span class="text-slate-400 text-[11px]">ชื่อลูกค้า:</span>
@@ -72,7 +69,6 @@
                 </div>
             </div>
 
-            <!-- สรุปยอดเงินและมัดจำ -->
             <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
                 <div class="flex justify-between text-slate-600">
                     <span>ยอดบริการรวมทั้งหมด:</span>
@@ -88,7 +84,6 @@
                 </div>
             </div>
 
-            <!-- ข้อความแจ้งแคปหน้าจอ -->
             <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-2.5 text-center text-xs font-semibold space-y-0.5">
                 <div class="flex items-center justify-center gap-1">
                     <i data-lucide="camera" class="w-4 h-4 text-amber-600"></i>
@@ -97,7 +92,6 @@
                 <p class="text-[10px] text-slate-500 font-normal">*กรุณามาถึงก่อนเวลาประมาณ 10-15 นาที ขอบพระคุณที่ใช้บริการ 037Studio ครับ</p>
             </div>
 
-            <!-- ปุ่มแชร์ให้เพื่อน -->
             <div class="pt-1">
                 <button onclick="shareStandaloneReceipt()" class="w-full py-3 bg-slate-900 text-amber-400 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2 shadow-md">
                     <i data-lucide="share-2" class="w-4 h-4"></i>
@@ -185,7 +179,7 @@
                 </div>
             </div>
 
-            <!-- HERO DASHBOARD CARD (สำหรับเจ้าของร้าน - ซ่อนในโหมดพนักงาน) -->
+            <!-- HERO DASHBOARD CARD (สำหรับเจ้าของร้าน) -->
             <div id="ownerDashboardCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
                 
@@ -210,7 +204,7 @@
                 </div>
             </div>
 
-            <!-- QUICK AUDIT SUMMARY CARD (สำหรับเจ้าของร้าน - ซ่อนในโหมดพนักงาน) -->
+            <!-- QUICK AUDIT SUMMARY CARD (สำหรับเจ้าของร้าน) -->
             <div id="ownerMonthlySummaryCard" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                     <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
@@ -231,7 +225,7 @@
                 </div>
             </div>
 
-            <!-- BUTTON ADD BOOKING FOR STAFF & OWNER -->
+            <!-- BUTTON ADD BOOKING -->
             <div class="flex justify-between items-center px-1">
                 <button onclick="toggleAddBookingModal(true)" class="w-full py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-2xl text-xs transition flex items-center justify-center gap-2 shadow-md">
                     <i data-lucide="calendar-plus" class="w-4 h-4"></i>
@@ -321,11 +315,9 @@
             </div>
         </div>
 
-        <!-- Modal ใบจองออนไลน์ (Digital Receipt Modal ในแอปแอดมิน) -->
+        <!-- Modal ใบจองออนไลน์ -->
         <div id="receiptModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
             <div class="modal-box bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 my-auto relative">
-                
-                <!-- การ์ดใบจองออนไลน์ -->
                 <div id="receiptCard" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3.5">
                     <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                         <div class="flex items-center gap-2.5">
@@ -378,7 +370,6 @@
                         </div>
                     </div>
 
-                    <!-- ข้อความแจ้งแคปหน้าจอ -->
                     <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-2.5 text-center text-[11px] font-semibold space-y-0.5">
                         <div class="flex items-center justify-center gap-1">
                             <i data-lucide="camera" class="w-3.5 h-3.5 text-amber-600"></i>
@@ -403,7 +394,6 @@
                         </button>
                     </div>
                 </div>
-
             </div>
         </div>
 
@@ -496,7 +486,6 @@
                     <span class="text-[10px] font-medium">PhotoBooth</span>
                 </button>
 
-                <!-- ปุ่มเปลี่ยนโหมดพนักงาน แทนที่ Google Sheet -->
                 <button onclick="toggleStaffModeNav()" id="tabBtnStaff" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
                     <i data-lucide="user-check" class="w-5 h-5"></i>
                     <span class="text-[10px] font-medium">โหมดพนักงาน</span>
@@ -506,7 +495,7 @@
     </div>
 
     <script>
-        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWidCv-wKZBRjxkmDOUFsjV59CdO_N_qBUYAJW6Q-Thozr3hUs1NPKrOYremBYpXPX/exec";
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby7g3gzFQSsHtO4-dHIQ8lOC06xSAuMMb9fM580opps0PBqj3S3jl6Pm1kxn5MAKOxA/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentTab = "studio";
@@ -540,7 +529,6 @@
             return `${baseUrl}?receipt=${bookingId}&type=${currentTab}`;
         }
 
-        // ตรวจสอบพารามิเตอร์โหมดพนักงานผ่าน URL
         function checkStaffModeFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('mode') === 'staff') {
@@ -618,45 +606,40 @@
             }
         }
 
+        // --- แก้ไขฟังก์ชันบันทึกคิวจองใหม่ ป้องกัน CORS (Failed to fetch) ---
         async function submitNewBooking(event) {
             event.preventDefault();
             const btn = document.getElementById("btnSubmitNewBooking");
             btn.disabled = true;
             btn.innerHTML = `<div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-slate-900"></div> <span>กำลังบันทึกลงปฏิทิน...</span>`;
 
-            const name = document.getElementById("addCustName").value.trim();
-            const phone = document.getElementById("addCustPhone").value.trim();
-            const date = document.getElementById("addBookingDate").value;
-            const time = document.getElementById("addBookingTime").value.trim();
-            const pkg = document.getElementById("addPackageName").value.trim();
-            const location = document.getElementById("addLocation").value.trim();
-            const total = document.getElementById("addTotalAmt").value || 0;
-            const deposit = document.getElementById("addDepositAmt").value || 0;
-
             const payload = {
                 action: "addBooking",
                 type: currentTab,
-                name: name,
-                phone: phone,
-                date: date,
-                time: time,
-                packageName: pkg,
-                location: location,
-                totalPrice: total,
-                depositPrice: deposit
+                name: document.getElementById("addCustName").value.trim(),
+                phone: document.getElementById("addCustPhone").value.trim(),
+                date: document.getElementById("addBookingDate").value,
+                time: document.getElementById("addBookingTime").value.trim(),
+                packageName: document.getElementById("addPackageName").value.trim(),
+                location: document.getElementById("addLocation").value.trim(),
+                totalPrice: document.getElementById("addTotalAmt").value || 0,
+                depositPrice: document.getElementById("addDepositAmt").value || 0
             };
 
             try {
-                const res = await fetch(SCRIPT_URL, {
+                // ส่งข้อมูลแบบ text/plain เพื่อเลี่ยงการติด CORS Preflight Block
+                await fetch(SCRIPT_URL, {
                     method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify(payload)
                 });
-                const json = await res.json();
-                alert(json.message || "บันทึกคิวจองใหม่ลงปฏิทินเรียบร้อยแล้ว!");
+
+                alert("บันทึกคิวจองใหม่ลง Google Calendar เรียบร้อยแล้ว!");
                 toggleAddBookingModal(false);
                 document.getElementById("addBookingForm").reset();
-                selectedDateStr = date;
+                selectedDateStr = payload.date;
                 await initApp(true);
+
             } catch (err) {
                 alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
             } finally {
@@ -1228,13 +1211,13 @@
                     slipFileName: slipFileName
                 };
 
-                const res = await fetch(SCRIPT_URL, {
+                await fetch(SCRIPT_URL, {
                     method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
                     body: JSON.stringify(payload)
                 });
 
-                const json = await res.json();
-                alert(json.message || "บันทึกเรียบร้อยแล้ว");
+                alert("บันทึกข้อมูลเรียบร้อยแล้ว");
                 toggleDepositModal(false);
                 await initApp(true);
 
