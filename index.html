@@ -27,18 +27,54 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+        /* การตั้งค่า CSS สำหรับหน้าพิมพ์ PDF */
         @media print {
-            body * { visibility: hidden; }
-            #receiptCard, #receiptCard * { visibility: visible; }
-            #receiptCard { position: absolute; left: 0; top: 0; width: 100%; border: none; shadow: none; }
-            .no-print { display: none !important; }
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body * { 
+                visibility: hidden; 
+            }
+            #receiptModal, #receiptModal * { 
+                visibility: visible; 
+            }
+            #receiptModal { 
+                position: absolute !important; 
+                left: 0 !important; 
+                top: 0 !important; 
+                width: 100% !important; 
+                height: auto !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+            }
+            .modal-box {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 650px !important;
+                padding: 0 !important;
+                margin: 0 auto !important;
+            }
+            #receiptCard {
+                border: 1px solid #e2e8f0 !important;
+                padding: 24px !important;
+                border-radius: 16px !important;
+            }
+            .no-print { 
+                display: none !important; 
+            }
         }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
 
     <!-- Top App Bar -->
-    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md no-print">
         <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center">
             <div class="flex items-center gap-2.5">
                 <div class="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
@@ -65,7 +101,7 @@
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-4 no-print">
 
         <!-- CALENDAR SECTION CARD -->
         <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
@@ -172,7 +208,7 @@
 
     <!-- Modal ใบจองออนไลน์ (Digital Receipt Modal) -->
     <div id="receiptModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
-        <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 my-auto relative">
+        <div class="modal-box bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 my-auto relative">
             
             <!-- การ์ดใบจองออนไลน์ -->
             <div id="receiptCard" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-4">
@@ -188,11 +224,11 @@
                     <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono" id="recBookingNo">#BOOK-01</span>
                 </div>
 
-                <!-- เวลาและวันที่นัดหมาย (เน้นจุดนี้) -->
+                <!-- เวลาและวันที่นัดหมาย (รูปแบบ DD-MM-YYYY) -->
                 <div class="bg-gradient-to-r from-slate-900 to-amber-950 text-white p-3.5 rounded-2xl text-center space-y-1 shadow-md">
                     <span class="text-[10px] text-amber-300 font-medium block">⏰ เวลาเข้าใช้บริการ / นัดหมาย</span>
                     <div class="text-xl font-extrabold text-amber-400 tracking-tight" id="recTime">18:00 - 19:00 น.</div>
-                    <div class="text-[11px] text-slate-300" id="recDate">วันเสาร์ที่ 24 ตุลาคม 2026</div>
+                    <div class="text-[12px] font-bold text-slate-200" id="recDate">28-10-2026</div>
                 </div>
 
                 <!-- ข้อมูลลูกค้า & บริการ -->
@@ -257,7 +293,7 @@
     </div>
 
     <!-- DEPOSIT & SLIP UPLOAD MODAL -->
-    <div id="depositModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="depositModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -301,7 +337,7 @@
     </div>
 
     <!-- SETTINGS MODAL -->
-    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
         <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                 <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -333,7 +369,7 @@
     </div>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 no-print">
         <div class="max-w-md mx-auto h-16 flex justify-around items-center px-2">
             <button onclick="switchTab('studio')" id="tabBtnStudio" class="flex flex-col items-center gap-1 text-amber-600 font-bold">
                 <i data-lucide="camera" class="w-5 h-5"></i>
@@ -369,6 +405,16 @@
 
         function renderIcons() {
             if (window.lucide) lucide.createIcons();
+        }
+
+        // แปลงรูปแบบวันที่ YYYY-MM-DD เป็น DD-MM-YYYY
+        function formatDateToDDMMYYYY(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            }
+            return dateStr;
         }
 
         function switchTab(type) {
@@ -431,7 +477,6 @@
             }
         }
 
-        // เปิด/ปิด Modal ใบจองออนไลน์
         function toggleReceiptModal(show, bookingObj = null) {
             const modal = document.getElementById("receiptModal");
             if (show && bookingObj) {
@@ -441,7 +486,7 @@
                 document.getElementById("recBookingNo").innerText = bNo ? `#${bNo[1]}` : `#${bookingObj.id.substring(0, 8)}`;
                 
                 document.getElementById("recTime").innerText = `${bookingObj.time} น.`;
-                document.getElementById("recDate").innerText = selectedDateStr;
+                document.getElementById("recDate").innerText = formatDateToDDMMYYYY(selectedDateStr);
                 
                 const nameMatch = (bookingObj.title + "\n" + bookingObj.desc).match(/(?:ชื่อ|ชื่อเล่น)\s*[:=]?\s*([^\n\r]+)/i);
                 document.getElementById("recCustName").innerText = nameMatch ? nameMatch[1].trim() : bookingObj.title;
@@ -472,28 +517,35 @@
             }
         }
 
-        // คัดลอกข้อความสรุปใบจองส่งเข้า LINE
+        // คัดลอกข้อความสรุปใบจองส่งเข้า LINE (พร้อมวันที่ DD-MM-YYYY และ ลิงก์ใบจองออนไลน์)
         function copyReceiptText() {
             if (!activeReceiptData) return;
             const b = activeReceiptData;
             const total = Number(b.totalPrice || 0);
             const deposit = Number(b.depositPrice || 0);
             const balance = Math.max(0, total - deposit);
+            const formattedDate = formatDateToDDMMYYYY(selectedDateStr);
+
+            // ดึงลิงก์เอกสารจากระบบ หรือใช้ URL ปัจจุบัน
+            let receiptUrl = window.location.href;
+            const docMatch = (b.title + "\n" + b.desc).match(/(https?:\/\/[^\s\n\r]+booking[^\s\n\r]*)/i);
+            if (docMatch) receiptUrl = docMatch[1];
 
             const text = `📌 ใบสรุปยืนยันการจอง 037Studio
 ------------------------------
 ⏰ เวลาเข้าใช้บริการ: ${b.time} น.
-📅 วันที่นัดหมาย: ${selectedDateStr}
+📅 วันที่นัดหมาย: ${formattedDate}
 🎬 รายการ: ${b.title}
 ------------------------------
 💰 ยอดรวมบริการ: ฿${total.toLocaleString()}
 ✅ ชำระมัดจำแล้ว: ฿${deposit.toLocaleString()}
 💵 ยอดคงเหลือชำระหน้างาน: ฿${balance.toLocaleString()}
+🧾 ใบจองออนไลน์: ${receiptUrl}
 ------------------------------
 ขอบพระคุณมากครับ 🙏🏻`;
 
             navigator.clipboard.writeText(text).then(() => {
-                alert("คัดลอกข้อความสรุปใบจองเรียบร้อยแล้ว! สามารถนำไปวางส่งใน LINE ได้เลยครับ");
+                alert("คัดลอกข้อความสรุปใบจองพร้อมลิงก์เรียบร้อยแล้ว! สามารถนำไปวางส่งใน LINE ได้เลยครับ");
             });
         }
 
@@ -705,7 +757,7 @@
             if (!response || response.status !== "success") return;
 
             const data = response.data;
-            document.getElementById("displaySelectedDate").innerText = data.date || selectedDateStr;
+            document.getElementById("displaySelectedDate").innerText = formatDateToDDMMYYYY(data.date || selectedDateStr);
 
             const bannerTitle = document.getElementById("bannerTitle");
             const bannerSub = document.getElementById("bannerSub");
