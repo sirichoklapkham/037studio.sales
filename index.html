@@ -293,7 +293,7 @@
                         </div>
                         <div>
                             <label class="block text-slate-700 font-medium mb-1">เวลาเข้าใช้บริการ <span class="text-rose-500">*</span></label>
-                            <input type="text" id="addBookingTime" required placeholder="เช่น 12.00-13.00" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            <input type="text" id="addBookingTime" required placeholder="เช่น 12.00-13.00 หรือ 1200" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
                         </div>
                     </div>
 
@@ -353,7 +353,8 @@
 
                     <div>
                         <label class="block text-slate-700 font-medium mb-1">เวลาเข้าใช้บริการใหม่ <span class="text-rose-500">*</span></label>
-                        <input type="text" id="inputNewTime" placeholder="เช่น 14.00-15.00" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <input type="text" id="inputNewTime" placeholder="เช่น 12.30-13.00 หรือ 1230" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <p class="text-[10px] text-slate-400 mt-1">*หากพิมพ์ผิด เช่น 1230 ระบบจะแปลงเป็น 12:30 น. ให้อัตโนมัติ</p>
                     </div>
                 </div>
 
@@ -376,9 +377,15 @@
                         <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
                         ถังขยะคิวจอง (กู้คืนคิวงาน)
                     </h3>
-                    <button onclick="toggleTrashModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button onclick="clearAllTrash()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-[10px] font-bold transition flex items-center gap-1" title="ล้างถังขยะ">
+                            <i data-lucide="sparkles" class="w-3 h-3"></i>
+                            <span>ล้างถังขยะ</span>
+                        </button>
+                        <button onclick="toggleTrashModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div id="trashListContainer" class="space-y-2 overflow-y-auto flex-1 text-xs pr-1">
@@ -592,7 +599,7 @@
     </div>
 
     <script>
-        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzjub_p_c1VSN6RRNXejO_UwcbfGVbOFoO7YyFEMMfcBtr0TJYtHqDJYDUQSE_FnejQ/exec";
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu09Q7Bl0He4sV4065v_jeSpOyRk_ZPd0ZDoVOssTkksoEY6TC50nPaSOrPUsC82Vi/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentTab = "studio";
@@ -715,7 +722,6 @@
             }
         }
 
-        // --- เปิด/ปิด Modal เลื่อนวัน/เวลา ---
         function openRescheduleModal(bookingId, currentValTime) {
             document.getElementById("rescheduleBookingId").value = bookingId;
             document.getElementById("inputNewDate").value = selectedDateStr;
@@ -758,7 +764,7 @@
                     body: JSON.stringify(payload)
                 });
 
-                alert("เลื่อนวัน/เวลาคิวจองเรียบร้อยแล้ว!");
+                alert("เลื่อนวัน/เวลา และอัปเดตคำบรรยายปฏิทินเรียบร้อยแล้ว!");
                 toggleRescheduleModal(false);
                 selectedDateStr = newDate;
                 await initApp(true);
@@ -771,7 +777,6 @@
             }
         }
 
-        // --- เปิด/ปิด Confirm Modal ถามซ้ำก่อนลบ ---
         function promptDeleteBooking(bookingId, titleName) {
             pendingDeleteId = bookingId;
             document.getElementById("deleteConfirmText").innerText = `คุณแน่ใจหรือไม่ที่จะย้ายคิวงาน "${titleName}" ลงถังขยะ? (สามารถกู้คืนได้ภายหลัง)`;
@@ -813,7 +818,6 @@
             }
         }
 
-        // --- หน้าต่างถังขยะคิวจอง ---
         async function toggleTrashModal(show) {
             const modal = document.getElementById("trashModal");
             if (show) {
@@ -838,7 +842,7 @@
                             <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex justify-between items-center space-x-2">
                                 <div>
                                     <strong class="text-slate-800 text-xs block">${item.title}</strong>
-                                    <span class="text-[10px] text-amber-600 block">📅 ${formatDateToDDMMYYYY(item.date)} | ⏰ ${item.time}</span>
+                                    <span class="text-[10px] text-amber-600 block">📅 ${formatDateToDDMMYYYY(item.date)} | ⏰ ${item.time} น.</span>
                                     <span class="text-[9px] text-slate-400 block">ลบเมื่อ: ${item.deletedAt}</span>
                                 </div>
                                 <button onclick="restoreBooking('${item.id}')" class="px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-[10px] shrink-0 active:scale-95 transition flex items-center gap-1 shadow-sm">
@@ -855,6 +859,34 @@
                 container.innerHTML = `<div class="text-center py-6 text-rose-500">โหลดข้อมูลถังขยะไม่สำเร็จ</div>`;
             }
             renderIcons();
+        }
+
+        async function clearAllTrash() {
+            if (!confirm("คุณต้องการล้างถังขยะทั้งหมดอย่างถาวรใช่หรือไม่? (ไม่สามารถกู้คืนได้อีก)")) return;
+
+            const loading = document.getElementById("loadingIndicator");
+            document.getElementById("loadingText").innerText = "กำลังล้างถังขยะ...";
+            loading.classList.remove("hidden");
+
+            try {
+                const payload = {
+                    action: "clearTrash",
+                    type: currentTab
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("ล้างถังขยะเรียบร้อยแล้ว!");
+                await loadTrashList();
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการล้างถังขยะ: " + err.message);
+            } finally {
+                loading.classList.add("hidden");
+            }
         }
 
         async function restoreBooking(bookingId) {
@@ -1315,6 +1347,7 @@
                 data.bookings.forEach((b) => {
                     const isFullyPaid = Number(b.depositPrice) >= Number(b.totalPrice) && Number(b.totalPrice) > 0;
                     const isDeposit = Number(b.depositPrice) > 0;
+                    const isRescheduled = b.desc.includes("[ปรับเลื่อนเวลาแล้ว]");
                     const formattedDesc = formatBookingDescription(b.title, b.desc, b.location);
 
                     let statusBadge = '';
@@ -1326,9 +1359,28 @@
                         statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">ยังไม่มีมัดจำ</span>`;
                     }
 
+                    // ดึงประวัติเวลาเก่าและเวลาใหม่
+                    let historyHtml = "";
+                    if (isRescheduled) {
+                        const historyMatch = b.desc.match(/\[ปรับเลื่อนเวลาแล้ว\][\s\S]*/);
+                        if (historyMatch) {
+                            historyHtml = `
+                                <div class="bg-indigo-50 border border-indigo-200 text-indigo-900 p-2.5 rounded-xl text-[11px] font-medium space-y-0.5">
+                                    <div class="flex items-center gap-1 font-bold text-indigo-700">
+                                        <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                                        <span>สรุปประวัติการย้ายเวลา:</span>
+                                    </div>
+                                    <div class="whitespace-pre-line text-[10px] text-indigo-800 leading-tight pl-4">${historyMatch[0].replace("[ปรับเลื่อนเวลาแล้ว]", "").trim()}</div>
+                                </div>
+                            `;
+                        }
+                    }
+
                     container.innerHTML += `
-                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs">
-                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs relative overflow-hidden">
+                            ${isRescheduled ? `<div class="bg-indigo-600 text-white text-[9px] font-bold px-3 py-0.5 rounded-br-xl absolute top-0 left-0 flex items-center gap-1 shadow-sm"><i data-lucide="rotate-cw" class="w-3 h-3"></i> ปรับเลื่อนเวลาแล้ว</div>` : ''}
+
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2 ${isRescheduled ? 'pt-3' : ''}">
                                 <span class="font-extrabold text-slate-900 text-base flex items-center gap-1.5 bg-amber-100 px-2.5 py-1 rounded-xl text-amber-900">
                                     <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
                                     ${b.time} น.
@@ -1346,6 +1398,7 @@
                             <div class="font-bold text-slate-900 text-sm">${b.title}</div>
 
                             ${formattedDesc}
+                            ${historyHtml}
 
                             <div class="space-y-1 pt-1 border-t border-slate-100">
                                 <div class="flex justify-between items-center text-slate-600">
