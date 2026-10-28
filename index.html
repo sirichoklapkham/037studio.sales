@@ -599,7 +599,7 @@
     </div>
 
     <script>
-        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzu09Q7Bl0He4sV4065v_jeSpOyRk_ZPd0ZDoVOssTkksoEY6TC50nPaSOrPUsC82Vi/exec";
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzKX-CwRsb4E_d8eM7IzrAjR1f_sammQFRwZHlIBZMtqP9OfeDOmPUqvhL6QKJxdPXT/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentTab = "studio";
@@ -623,7 +623,7 @@
 
         function formatDateToDDMMYYYY(dateStr) {
             if (!dateStr) return '';
-            const parts = dateStr.split('-');
+            const parts = String(dateStr).split('T')[0].split('-');
             if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
             return dateStr;
         }
@@ -764,7 +764,7 @@
                     body: JSON.stringify(payload)
                 });
 
-                alert("เลื่อนวัน/เวลา และอัปเดตคำบรรยายปฏิทินเรียบร้อยแล้ว!");
+                alert("เลื่อนวัน/เวลาเรียบร้อยแล้ว!");
                 toggleRescheduleModal(false);
                 selectedDateStr = newDate;
                 await initApp(true);
@@ -1309,6 +1309,19 @@
             return html;
         }
 
+        // คลีนประวัติการเลื่อนเวลาไม่ให้มีสตริง Date ยาวๆ โผล่มา
+        function cleanHistoryText(rawHistoryText) {
+            if (!rawHistoryText) return "";
+            return rawHistoryText
+                .replace(/\[ปรับเลื่อนเวลาแล้ว\]/, '')
+                .replace(/GMT\+[0-9]+[^\n\r]*/g, '')
+                .replace(/Sat|Sun|Mon|Tue|Wed|Thu|Fri|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/gi, '')
+                .replace(/\b1899\b/g, '')
+                .replace(/(\d{2}:\d{2}):\d{2}/g, '$1')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
         function renderReport(response) {
             document.getElementById("loadingIndicator").classList.add("hidden");
 
@@ -1359,18 +1372,19 @@
                         statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">ยังไม่มีมัดจำ</span>`;
                     }
 
-                    // ดึงประวัติเวลาเก่าและเวลาใหม่
+                    // สร้างกล่องสรุปย้ายเวลาสวยๆ อ่านง่าย
                     let historyHtml = "";
                     if (isRescheduled) {
                         const historyMatch = b.desc.match(/\[ปรับเลื่อนเวลาแล้ว\][\s\S]*/);
                         if (historyMatch) {
+                            const cleanedNote = cleanHistoryText(historyMatch[0]);
                             historyHtml = `
                                 <div class="bg-indigo-50 border border-indigo-200 text-indigo-900 p-2.5 rounded-xl text-[11px] font-medium space-y-0.5">
-                                    <div class="flex items-center gap-1 font-bold text-indigo-700">
+                                    <div class="flex items-center gap-1 font-bold text-indigo-700 mb-0.5">
                                         <i data-lucide="history" class="w-3.5 h-3.5"></i>
                                         <span>สรุปประวัติการย้ายเวลา:</span>
                                     </div>
-                                    <div class="whitespace-pre-line text-[10px] text-indigo-800 leading-tight pl-4">${historyMatch[0].replace("[ปรับเลื่อนเวลาแล้ว]", "").trim()}</div>
+                                    <div class="whitespace-pre-line text-[10px] text-indigo-800 leading-relaxed font-mono">${cleanedNote}</div>
                                 </div>
                             `;
                         }
