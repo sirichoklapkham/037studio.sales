@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>037Studio & PhotoBooth Audit</title>
+    <title>037Studio & PhotoBooth System</title>
 
     <!-- App Icon & Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
@@ -107,7 +107,7 @@
         </div>
     </div>
 
-    <!-- MAIN ADMIN APP WRAPPER -->
+    <!-- MAIN APP WRAPPER -->
     <div id="mainAdminApp">
         <!-- Top App Bar -->
         <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
@@ -120,17 +120,20 @@
                              onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'camera\' class=\'w-5 h-5 text-amber-500\'></i>'; renderIcons();">
                     </div>
                     <div>
-                        <h1 class="font-bold text-base leading-tight" id="appHeaderTitle">037Studio</h1>
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="font-bold text-base leading-tight" id="appHeaderTitle">037Studio</h1>
+                            <span id="badgeStaffMode" class="hidden bg-amber-500 text-slate-950 text-[9px] font-extrabold px-1.5 py-0.2 rounded">โหมดพนักงาน</span>
+                        </div>
                         <p class="text-[10px] text-amber-400 font-medium" id="appHeaderSub">ระบบตรวจเช็คยอดจอง & ยอดมัดจำ</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <button onclick="toggleSettingsModal(true)" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-amber-400 transition border border-slate-700">
+                    <button id="btnSettings" onclick="toggleSettingsModal(true)" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-amber-400 transition border border-slate-700">
                         <i data-lucide="settings" class="w-4 h-4"></i>
                     </button>
                     <button onclick="syncCalendar()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
                         <i data-lucide="refresh-cw" class="w-4 h-4" id="iconSync"></i>
-                        <span class="hidden sm:inline">ดึงข้อมูลปฏิทิน</span>
+                        <span class="hidden sm:inline">ดึงข้อมูล</span>
                     </button>
                 </div>
             </div>
@@ -182,8 +185,8 @@
                 </div>
             </div>
 
-            <!-- HERO DASHBOARD CARD -->
-            <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
+            <!-- HERO DASHBOARD CARD (สำหรับเจ้าของร้าน - ซ่อนในโหมดพนักงาน) -->
+            <div id="ownerDashboardCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
                 
                 <div class="flex justify-between items-center mb-1">
@@ -207,8 +210,8 @@
                 </div>
             </div>
 
-            <!-- QUICK AUDIT SUMMARY CARD -->
-            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+            <!-- QUICK AUDIT SUMMARY CARD (สำหรับเจ้าของร้าน - ซ่อนในโหมดพนักงาน) -->
+            <div id="ownerMonthlySummaryCard" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-2">
                     <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
                         <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
@@ -228,6 +231,14 @@
                 </div>
             </div>
 
+            <!-- BUTTON ADD BOOKING FOR STAFF & OWNER -->
+            <div class="flex justify-between items-center px-1">
+                <button onclick="toggleAddBookingModal(true)" class="w-full py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-2xl text-xs transition flex items-center justify-center gap-2 shadow-md">
+                    <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                    <span>+ ลงคิวจองใหม่ให้ลูกค้า (บันทึกลงปฏิทิน)</span>
+                </button>
+            </div>
+
             <!-- BOOKING SCHEDULE LIST CARD -->
             <div class="space-y-2">
                 <div class="flex justify-between items-center px-1">
@@ -241,6 +252,74 @@
             </div>
 
         </main>
+
+        <!-- Modal เพิ่มคิวจองใหม่ (Add Booking Modal) -->
+        <div id="addBookingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="calendar-plus" class="w-4 h-4 text-amber-500"></i>
+                        กรอกข้อมูลคิวจองใหม่
+                    </h3>
+                    <button onclick="toggleAddBookingModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <form id="addBookingForm" onsubmit="submitNewBooking(event)" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">ชื่อลูกค้า / ชื่อเล่น <span class="text-rose-500">*</span></label>
+                        <input type="text" id="addCustName" required placeholder="เช่น คุณปลา" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">เบอร์โทรศัพท์</label>
+                        <input type="tel" id="addCustPhone" placeholder="เช่น 0956713869" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">วันที่นัดหมาย <span class="text-rose-500">*</span></label>
+                            <input type="date" id="addBookingDate" required class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">เวลาเข้าใช้บริการ <span class="text-rose-500">*</span></label>
+                            <input type="text" id="addBookingTime" required placeholder="เช่น 12:00 - 12:10" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">แพ็กเกจ / บริการที่เลือก <span class="text-rose-500">*</span></label>
+                        <input type="text" id="addPackageName" required placeholder="เช่น เซลฟี่สตูดิโอ 10 นาที โปรเดือนตุลาคม" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">สถานที่ / สาขา</label>
+                        <input type="text" id="addLocation" placeholder="เช่น 037Studio ขอนแก่น" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">ยอดบริการรวม (บาท)</label>
+                            <input type="number" id="addTotalAmt" placeholder="เช่น 150" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">มัดจำชำระแล้ว (บาท)</label>
+                            <input type="number" id="addDepositAmt" placeholder="เช่น 75" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-emerald-600">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" id="btnSubmitNewBooking" class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2">
+                            <span>บันทึกลงปฏิทิน</span>
+                        </button>
+                        <button type="button" onclick="toggleAddBookingModal(false)" class="py-3 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                            ยกเลิก
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <!-- Modal ใบจองออนไลน์ (Digital Receipt Modal ในแอปแอดมิน) -->
         <div id="receiptModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
@@ -417,10 +496,11 @@
                     <span class="text-[10px] font-medium">PhotoBooth</span>
                 </button>
 
-                <a href="https://docs.google.com/spreadsheets" target="_blank" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
-                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
-                    <span class="text-[10px] font-medium">Google Sheet</span>
-                </a>
+                <!-- ปุ่มเปลี่ยนโหมดพนักงาน แทนที่ Google Sheet -->
+                <button onclick="toggleStaffModeNav()" id="tabBtnStaff" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
+                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-medium">โหมดพนักงาน</span>
+                </button>
             </div>
         </nav>
     </div>
@@ -430,6 +510,7 @@
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentTab = "studio";
+        let isStaffMode = false;
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let selectedDateStr = new Date().toISOString().split('T')[0];
@@ -459,6 +540,47 @@
             return `${baseUrl}?receipt=${bookingId}&type=${currentTab}`;
         }
 
+        // ตรวจสอบพารามิเตอร์โหมดพนักงานผ่าน URL
+        function checkStaffModeFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'staff') {
+                isStaffMode = true;
+                applyStaffModeUI();
+            }
+        }
+
+        function toggleStaffModeNav() {
+            isStaffMode = !isStaffMode;
+            applyStaffModeUI();
+            if (isStaffMode) {
+                alert("สลับเข้าสู่ 'โหมดพนักงาน' เรียบร้อยครับ\n(ระบบจะซ่อนสรุปยอดเงินขาย และเพิ่มปุ่มลงคิวจองใหม่)");
+            } else {
+                alert("สลับเข้าสู่ 'โหมดเจ้าของร้าน' เรียบร้อยครับ");
+            }
+        }
+
+        function applyStaffModeUI() {
+            const ownerDash = document.getElementById("ownerDashboardCard");
+            const ownerMonth = document.getElementById("ownerMonthlySummaryCard");
+            const btnSet = document.getElementById("btnSettings");
+            const badgeStaff = document.getElementById("badgeStaffMode");
+            const tabBtnStaff = document.getElementById("tabBtnStaff");
+
+            if (isStaffMode) {
+                ownerDash.classList.add("hidden");
+                ownerMonth.classList.add("hidden");
+                btnSet.classList.add("hidden");
+                badgeStaff.classList.remove("hidden");
+                tabBtnStaff.className = "flex flex-col items-center gap-1 text-emerald-600 font-bold";
+            } else {
+                ownerDash.classList.remove("hidden");
+                ownerMonth.classList.remove("hidden");
+                btnSet.classList.remove("hidden");
+                badgeStaff.classList.add("hidden");
+                tabBtnStaff.className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700";
+            }
+        }
+
         function switchTab(type) {
             if (currentTab === type) return;
             currentTab = type;
@@ -484,6 +606,63 @@
             }
 
             initApp(true);
+        }
+
+        function toggleAddBookingModal(show) {
+            const modal = document.getElementById("addBookingModal");
+            if (show) {
+                document.getElementById("addBookingDate").value = selectedDateStr;
+                modal.classList.remove("hidden");
+            } else {
+                modal.classList.add("hidden");
+            }
+        }
+
+        async function submitNewBooking(event) {
+            event.preventDefault();
+            const btn = document.getElementById("btnSubmitNewBooking");
+            btn.disabled = true;
+            btn.innerHTML = `<div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-slate-900"></div> <span>กำลังบันทึกลงปฏิทิน...</span>`;
+
+            const name = document.getElementById("addCustName").value.trim();
+            const phone = document.getElementById("addCustPhone").value.trim();
+            const date = document.getElementById("addBookingDate").value;
+            const time = document.getElementById("addBookingTime").value.trim();
+            const pkg = document.getElementById("addPackageName").value.trim();
+            const location = document.getElementById("addLocation").value.trim();
+            const total = document.getElementById("addTotalAmt").value || 0;
+            const deposit = document.getElementById("addDepositAmt").value || 0;
+
+            const payload = {
+                action: "addBooking",
+                type: currentTab,
+                name: name,
+                phone: phone,
+                date: date,
+                time: time,
+                packageName: pkg,
+                location: location,
+                totalPrice: total,
+                depositPrice: deposit
+            };
+
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                alert(json.message || "บันทึกคิวจองใหม่ลงปฏิทินเรียบร้อยแล้ว!");
+                toggleAddBookingModal(false);
+                document.getElementById("addBookingForm").reset();
+                selectedDateStr = date;
+                await initApp(true);
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>บันทึกลงปฏิทิน</span>`;
+            }
         }
 
         function toggleSettingsModal(show) {
@@ -578,7 +757,6 @@
 ขอบพระคุณมากครับ 🙏🏻`;
         }
 
-        // ฟังก์ชันแชร์สำหรับหน้า Standalone ใบจองของลูกค้า
         async function shareStandaloneReceipt() {
             if (!standaloneBookingObj) return;
             const text = getShareText(standaloneBookingObj);
@@ -596,12 +774,11 @@
                 }
             } else {
                 navigator.clipboard.writeText(text).then(() => {
-                    alert("คัดลอกข้อความสรุปและลิงก์ใบจองเรียบร้อยแล้ว! สามารถนำไปวางแชร์ให้เพื่อนได้เลยครับ");
+                    alert("คัดลอกข้อความสรุปและลิงก์ใบจองเรียบร้อยแล้ว!");
                 });
             }
         }
 
-        // ฟังก์ชันแชร์สำหรับ Modal ในแอปแอดมิน
         async function shareModalReceipt() {
             if (!activeReceiptData) return;
             const text = getShareText(activeReceiptData);
@@ -634,7 +811,7 @@
             const text = getShareText(activeReceiptData);
 
             navigator.clipboard.writeText(text).then(() => {
-                alert("คัดลอกข้อความสรุปใบจองพร้อมลิงก์เรียบร้อยแล้ว! สามารถนำไปวางส่งใน LINE ได้เลยครับ");
+                alert("คัดลอกข้อความสรุปใบจองพร้อมลิงก์เรียบร้อยแล้ว!");
             });
         }
 
@@ -855,8 +1032,8 @@
                 bannerTitle.innerText = "ไม่มีคิวจองในวันที่เลือก";
                 bannerSub.innerText = "สามารถรับงานถ่ายทำ / ตู้ PhotoBooth เพิ่มได้";
             } else {
-                bannerTitle.innerText = `มีนัดหมายทั้งหมด ${data.totalBookings} คิว`;
-                bannerSub.innerText = `ยอดรวมบริการ ฿${data.totalSales.toLocaleString()} (ได้รับมัดจำแล้ว ฿${data.totalDeposit.toLocaleString()})`;
+                bannerTitle.innerText = `มีนัดหมายทั้งหมด ${data.totalBookings} คิว (${formatDateToDDMMYYYY(data.date || selectedDateStr)})`;
+                bannerSub.innerText = isStaffMode ? `ตารางคิวงานวันที่เปิดให้บริการ` : `ยอดรวมบริการ ฿${data.totalSales.toLocaleString()} (ได้รับมัดจำแล้ว ฿${data.totalDeposit.toLocaleString()})`;
             }
 
             document.getElementById("valTotalSales").innerText = `฿${Number(data.totalSales || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
@@ -882,9 +1059,9 @@
 
                     let statusBadge = '';
                     if (isFullyPaid) {
-                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-pink-100 text-pink-700 border border-pink-200">ชำระครบแล้ว ฿${Number(b.depositPrice).toLocaleString()}</span>`;
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-pink-100 text-pink-700 border border-pink-200">ชำระครบแล้ว</span>`;
                     } else if (isDeposit) {
-                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">มัดจำแล้ว ฿${Number(b.depositPrice).toLocaleString()}</span>`;
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">มัดจำแล้ว</span>`;
                     } else {
                         statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">ยังไม่มีมัดจำ</span>`;
                     }
@@ -892,8 +1069,8 @@
                     container.innerHTML += `
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs">
                             <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                <span class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                                    <i data-lucide="clock" class="w-4 h-4 text-amber-500"></i>
+                                <span class="font-extrabold text-slate-900 text-base flex items-center gap-1.5 bg-amber-100 px-2.5 py-1 rounded-xl text-amber-900">
+                                    <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
                                     ${b.time} น.
                                 </span>
                                 ${statusBadge}
@@ -925,12 +1102,6 @@
                                     <span>กรอกมัดจำ / แนบสลิป</span>
                                 </button>
 
-                                <button onclick="payFullAmount('${b.id}', ${b.totalPrice})" 
-                                        class="flex-1 min-w-[130px] py-2 px-3 bg-pink-300 hover:bg-pink-400 active:scale-95 text-pink-950 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm border border-pink-400/30">
-                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-pink-700"></i>
-                                    <span>ชำระทั้งหมดเรียบร้อย</span>
-                                </button>
-
                                 <button onclick='toggleReceiptModal(true, ${JSON.stringify(b).replace(/'/g, "&apos;")})' 
                                         class="py-2 px-3 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0 shadow-sm">
                                     <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
@@ -940,16 +1111,8 @@
                                 <button onclick="copySingleReceiptLink('${b.id}')" 
                                         class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0 border border-slate-200">
                                     <i data-lucide="link" class="w-3.5 h-3.5 text-slate-500"></i>
-                                    <span>🔗 คัดลอกลิงก์ใบจอง</span>
+                                    <span>🔗 คัดลอกลิงก์</span>
                                 </button>
-
-                                ${b.slipUrl ? `
-                                    <a href="${b.slipUrl}" target="_blank" 
-                                       class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0 border border-slate-200">
-                                        <i data-lucide="image" class="w-3.5 h-3.5 text-slate-500"></i>
-                                        <span>ดูสลิป</span>
-                                    </a>
-                                ` : ''}
                             </div>
                         </div>
                     `;
@@ -1033,41 +1196,6 @@
             renderIcons();
         }
 
-        async function payFullAmount(bookingId, totalPrice) {
-            if (!confirm(`ยืนยันการบันทึกชำระเงินเต็มจำนวน (฿${Number(totalPrice).toLocaleString()} บาท) สำหรับรายการนี้ใช่หรือไม่?`)) {
-                return;
-            }
-
-            const loading = document.getElementById("loadingIndicator");
-            document.getElementById("loadingText").innerText = "กำลังบันทึกการชำระเงินเต็มจำนวน...";
-            loading.classList.remove("hidden");
-
-            try {
-                const payload = {
-                    action: "updateDeposit",
-                    type: currentTab,
-                    bookingId: bookingId,
-                    depositAmount: totalPrice,
-                    slipBase64: "",
-                    slipFileName: ""
-                };
-
-                const res = await fetch(SCRIPT_URL, {
-                    method: "POST",
-                    body: JSON.stringify(payload)
-                });
-
-                const json = await res.json();
-                alert(json.message || "บันทึกการชำระเงินเต็มจำนวนเรียบร้อยแล้ว");
-                await initApp(true);
-
-            } catch (err) {
-                alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
-            } finally {
-                loading.classList.add("hidden");
-            }
-        }
-
         async function submitDepositAndSlip() {
             const bookingId = document.getElementById("modalBookingId").value;
             const depositAmount = document.getElementById("inputDepositAmount").value;
@@ -1124,6 +1252,7 @@
         }
 
         window.onload = async () => {
+            checkStaffModeFromUrl();
             const isPublicMode = await checkPublicReceiptMode();
             if (!isPublicMode) {
                 initApp();
