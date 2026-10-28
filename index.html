@@ -489,17 +489,17 @@
         <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
             <div class="max-w-md mx-auto h-16 flex justify-around items-center px-2">
                 <button onclick="switchTab('studio')" id="tabBtnStudio" class="flex flex-col items-center gap-1 text-amber-600 font-bold">
-                    <i data-lucide="camera" class="w-5 h-5"></i>
+                    <i data-lucide="camera" id="iconTabStudio" class="w-5 h-5"></i>
                     <span class="text-[10px]">037Studio</span>
                 </button>
                 
                 <button onclick="switchTab('photobooth')" id="tabBtnPhotobooth" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
-                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    <i data-lucide="sparkles" id="iconTabPB" class="w-5 h-5"></i>
                     <span class="text-[10px] font-medium">PhotoBooth</span>
                 </button>
 
                 <button onclick="toggleStaffModeNav()" id="tabBtnStaff" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
-                    <i data-lucide="user-check" class="w-5 h-5"></i>
+                    <i data-lucide="user-check" id="iconTabStaff" class="w-5 h-5"></i>
                     <span class="text-[10px] font-medium">โหมดพนักงาน</span>
                 </button>
             </div>
@@ -512,6 +512,7 @@
 
         let currentTab = "studio";
         let isStaffMode = false;
+        let isLockedByUrl = false; // ตัวแปรเช็คการล็อคโหมดพนักงานถาวร
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let selectedDateStr = new Date().toISOString().split('T')[0];
@@ -553,11 +554,16 @@
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('mode') === 'staff') {
                 isStaffMode = true;
+                isLockedByUrl = true; // ล็อคให้พนักงานสลับกลับไม่ได้
                 applyStaffModeUI();
             }
         }
 
         function toggleStaffModeNav() {
+            if (isLockedByUrl) {
+                alert("🔒 โหมดพนักงานถูกล็อคโดยเจ้าของร้าน ไม่สามารถสลับกลับเป็นโหมดเจ้าของร้านได้");
+                return;
+            }
             isStaffMode = !isStaffMode;
             applyStaffModeUI();
             if (isStaffMode) {
@@ -575,6 +581,9 @@
             const badgeStaff = document.getElementById("badgeStaffMode");
             const tabBtnStaff = document.getElementById("tabBtnStaff");
 
+            const studioBtn = document.getElementById("tabBtnStudio");
+            const pbBtn = document.getElementById("tabBtnPhotobooth");
+
             if (isStaffMode) {
                 ownerDash.classList.add("hidden");
                 ownerMonth.classList.add("hidden");
@@ -582,6 +591,13 @@
                 btnSet.classList.add("hidden");
                 badgeStaff.classList.remove("hidden");
                 tabBtnStaff.className = "flex flex-col items-center gap-1 text-emerald-600 font-bold";
+
+                // ล็อคเปลี่ยนไอคอนด้านล่างเป็นกุญแจล็อค🔒
+                studioBtn.className = "flex flex-col items-center gap-1 text-slate-300 opacity-60 cursor-not-allowed";
+                pbBtn.className = "flex flex-col items-center gap-1 text-slate-300 opacity-60 cursor-not-allowed";
+
+                studioBtn.innerHTML = `<i data-lucide="lock" class="w-5 h-5 text-slate-400"></i><span class="text-[10px]">037Studio (ล็อค)</span>`;
+                pbBtn.innerHTML = `<i data-lucide="lock" class="w-5 h-5 text-slate-400"></i><span class="text-[10px]">PhotoBooth (ล็อค)</span>`;
             } else {
                 ownerDash.classList.remove("hidden");
                 ownerMonth.classList.remove("hidden");
@@ -589,10 +605,21 @@
                 btnSet.classList.remove("hidden");
                 badgeStaff.classList.add("hidden");
                 tabBtnStaff.className = "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700";
+
+                studioBtn.className = currentTab === 'studio' ? "flex flex-col items-center gap-1 text-amber-600 font-bold" : "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700";
+                pbBtn.className = currentTab === 'photobooth' ? "flex flex-col items-center gap-1 text-pink-600 font-bold" : "flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700";
+
+                studioBtn.innerHTML = `<i data-lucide="camera" class="w-5 h-5"></i><span class="text-[10px]">037Studio</span>`;
+                pbBtn.innerHTML = `<i data-lucide="sparkles" class="w-5 h-5"></i><span class="text-[10px] font-medium">PhotoBooth</span>`;
             }
+            renderIcons();
         }
 
         function switchTab(type) {
+            if (isStaffMode) {
+                alert("🔒 คุณอยู่ในโหมดพนักงาน ไม่สามารถเข้าถึงหรือเปลี่ยนกลุ่มงานได้ (เข้าถึงได้เฉพาะเจ้าของร้าน)");
+                return;
+            }
             if (currentTab === type) return;
             currentTab = type;
 
@@ -671,7 +698,6 @@
             }
         }
 
-        // ฟังก์ชันลบคิวงาน ทั้งปฏิทินและตาราง
         async function deleteBookingItem(bookingId, titleName) {
             if (!confirm(`คุณต้องการลบคิวงาน "${titleName}" ออกจากปฏิทิน Google และตารางใช่หรือไม่?`)) {
                 return;
