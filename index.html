@@ -37,10 +37,10 @@
             body * { 
                 visibility: hidden; 
             }
-            #receiptModal, #receiptModal * { 
+            #receiptModal, #receiptModal *, #standaloneReceipt, #standaloneReceipt * { 
                 visibility: visible; 
             }
-            #receiptModal { 
+            #receiptModal, #standaloneReceipt { 
                 position: absolute !important; 
                 left: 0 !important; 
                 top: 0 !important; 
@@ -60,10 +60,10 @@
                 padding: 0 !important;
                 margin: 0 auto !important;
             }
-            #receiptCard {
+            #receiptCard, #standaloneReceiptCard {
                 border: 1px solid #e2e8f0 !important;
                 padding: 24px !important;
-                border-radius: 16px !important;
+                border-radius: 20px !important;
             }
             .no-print { 
                 display: none !important; 
@@ -73,320 +73,389 @@
 </head>
 <body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
 
-    <!-- Top App Bar -->
-    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md no-print">
-        <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-2.5">
-                <div class="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
-                    <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" 
-                         alt="037Studio Logo" 
-                         class="w-full h-full object-cover"
-                         onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'camera\' class=\'w-5 h-5 text-amber-500\'></i>'; renderIcons();">
-                </div>
-                <div>
-                    <h1 class="font-bold text-base leading-tight" id="appHeaderTitle">037Studio</h1>
-                    <p class="text-[10px] text-amber-400 font-medium" id="appHeaderSub">ระบบตรวจเช็คยอดจอง & ยอดมัดจำ</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-1.5">
-                <button onclick="toggleSettingsModal(true)" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-amber-400 transition border border-slate-700">
-                    <i data-lucide="settings" class="w-4 h-4"></i>
-                </button>
-                <button onclick="syncCalendar()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
-                    <i data-lucide="refresh-cw" class="w-4 h-4" id="iconSync"></i>
-                    <span class="hidden sm:inline">ดึงข้อมูลปฏิทิน</span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-md mx-auto px-4 pt-4 space-y-4 no-print">
-
-        <!-- CALENDAR SECTION CARD -->
-        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-1.5">
-                    <i data-lucide="calendar" class="w-4 h-4 text-amber-500"></i>
-                    <h2 class="font-bold text-xs text-slate-900" id="calendarMonthTitle">กำลังโหลด...</h2>
-                </div>
-                <div class="flex items-center gap-1">
-                    <button onclick="changeMonth(-1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
-                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="changeMonth(1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </button>
-                    <a id="btnCalendarExternal" href="https://calendar.google.com/calendar/u/1?cid=c2lyaWNob2tsYXBraGFtQGdtYWlsLmNvbQ" target="_blank" class="ml-1 bg-slate-900 text-amber-400 text-[10px] font-semibold px-2 py-1 rounded-lg transition flex items-center gap-1">
-                        <i data-lucide="external-link" class="w-3 h-3"></i>
-                        <span>ปฏิทิน</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 border-b border-slate-100 pb-1">
-                <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
-            </div>
-
-            <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarGrid"></div>
-        </div>
-
-        <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="bg-white/90 border border-amber-300 p-3.5 rounded-2xl text-center font-medium text-amber-900 shadow-sm">
-            <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600 mr-2"></div>
-            <span id="loadingText" class="text-xs">กำลังเชื่อมต่อข้อมูลคิวจอง...</span>
-        </div>
-
-        <!-- ALERT BANNER -->
-        <div id="depositStatusBanner" class="rounded-2xl p-3.5 border transition-all duration-300 flex items-start gap-3 shadow-sm bg-emerald-50 border-emerald-200 text-emerald-800">
-            <i data-lucide="shield-check" class="w-5 h-5 text-emerald-500 shrink-0"></i>
-            <div class="text-xs">
-                <span class="font-bold block" id="bannerTitle">สรุปภาพรวมวันที่เลือก</span>
-                <span class="text-[10px] text-slate-600 block" id="bannerSub">เลือกวันที่ในปฏิทินด้านบนเพื่อดูตารางเวลาและยอดมัดจำ</span>
-            </div>
-        </div>
-
-        <!-- HERO DASHBOARD CARD -->
-        <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
-            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
-            
-            <div class="flex justify-between items-center mb-1">
-                <span class="text-xs text-slate-400 font-medium tracking-wide">ยอดรวมจองวันที่ <span id="displaySelectedDate" class="text-amber-400 font-bold">-</span></span>
-                <span id="valTotalBookings" class="text-[11px] bg-white/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">0 คิว</span>
-            </div>
-            
-            <div class="text-3xl font-extrabold tracking-tight text-white mb-4" id="valTotalSales">฿0.00</div>
-
-            <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
-                <div>
-                    <span class="text-slate-400 text-[10px] block">ยอดมัดจำที่ได้รับแล้ว</span>
-                    <span id="valTotalDeposit" class="font-bold text-emerald-400 text-sm">฿0.00</span>
-                    <span id="valDepositCount" class="text-[9px] text-slate-400 block truncate">0 คิวมีมัดจำ</span>
-                </div>
-                <div class="border-l border-white/10 pl-3">
-                    <span class="text-slate-400 text-[10px] block">คิวที่ยังไม่มีมัดจำ</span>
-                    <span id="valNoDepositCount" class="font-bold text-amber-400 text-sm">0 คิว</span>
-                    <span id="valPendingAmount" class="text-[9px] text-slate-400 block truncate">คงเหลือ ฿0.00</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- QUICK AUDIT SUMMARY CARD -->
-        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
-                    <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
-                    สรุปยอดจองประจำเดือน (<span id="monthlyLabel">-</span>)
-                </h2>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span class="text-slate-500 text-[10px] block">ยอดจองรวมทั้งเดือน</span>
-                    <span id="monthlyTotalSales" class="font-bold text-slate-800 text-sm">฿0.00</span>
-                </div>
-                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span class="text-slate-500 text-[10px] block">ยอดมัดจำรวมทั้งเดือน</span>
-                    <span id="monthlyTotalDeposit" class="font-bold text-emerald-600 text-sm">฿0.00</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- BOOKING SCHEDULE LIST CARD -->
-        <div class="space-y-2">
-            <div class="flex justify-between items-center px-1">
-                <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
-                    <i data-lucide="clock" class="w-4 h-4 text-indigo-500"></i>
-                    ตารางคิวและเวลาเข้าใช้บริการ
-                </h2>
-                <span id="bookingListCount" class="text-[10px] font-medium text-slate-500">0 รายการ</span>
-            </div>
-            <div id="bookingListContainer" class="space-y-2"></div>
-        </div>
-
-    </main>
-
-    <!-- Modal ใบจองออนไลน์ (Digital Receipt Modal) -->
-    <div id="receiptModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
-        <div class="modal-box bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 my-auto relative">
-            
-            <!-- การ์ดใบจองออนไลน์ -->
-            <div id="receiptCard" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-4">
-                <!-- Header ใบจอง -->
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div class="flex items-center gap-2.5">
-                        <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" class="w-10 h-10 rounded-full object-cover border border-amber-500/30">
-                        <div>
-                            <h3 class="font-bold text-slate-900 text-base leading-tight">037Studio</h3>
-                            <p class="text-[10px] text-amber-600 font-semibold">ใบสรุปยืนยันการจองออนไลน์</p>
-                        </div>
-                    </div>
-                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono" id="recBookingNo">#BOOK-01</span>
-                </div>
-
-                <!-- เวลาและวันที่นัดหมาย (รูปแบบ DD-MM-YYYY) -->
-                <div class="bg-gradient-to-r from-slate-900 to-amber-950 text-white p-3.5 rounded-2xl text-center space-y-1 shadow-md">
-                    <span class="text-[10px] text-amber-300 font-medium block">⏰ เวลาเข้าใช้บริการ / นัดหมาย</span>
-                    <div class="text-xl font-extrabold text-amber-400 tracking-tight" id="recTime">18:00 - 19:00 น.</div>
-                    <div class="text-[12px] font-bold text-slate-200" id="recDate">28-10-2026</div>
-                </div>
-
-                <!-- ข้อมูลลูกค้า & บริการ -->
-                <div class="space-y-2 text-xs">
-                    <div class="flex justify-between border-b border-slate-50 pb-1.5">
-                        <span class="text-slate-400 text-[11px]">ชื่อลูกค้า:</span>
-                        <strong class="text-slate-800" id="recCustName">คุณลูกค้า</strong>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-50 pb-1.5">
-                        <span class="text-slate-400 text-[11px]">เบอร์โทรศัพท์:</span>
-                        <strong class="text-slate-800 font-mono" id="recCustPhone">095-671-3869</strong>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-50 pb-1.5">
-                        <span class="text-slate-400 text-[11px]">แพ็กเกจ/บริการ:</span>
-                        <strong class="text-slate-800 text-right max-w-[180px]" id="recPackage">แพ็กเกจถ่ายภาพ Studio</strong>
-                    </div>
-                    <div class="flex justify-between border-b border-slate-50 pb-1.5" id="recLocationRow">
-                        <span class="text-slate-400 text-[11px]">สถานที่:</span>
-                        <strong class="text-slate-800 text-right max-w-[180px]" id="recLocation">037Studio ขอนแก่น</strong>
+    <!-- STANDALONE PUBLIC RECEIPT VIEW (สำหรับลูกค้าเปิดผ่านลิงก์เฉพาะงาน) -->
+    <div id="standaloneReceipt" class="hidden min-h-screen flex items-center justify-center p-4 bg-slate-100">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-xl space-y-5 border border-slate-200" id="standaloneReceiptCard">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" class="w-10 h-10 rounded-full object-cover border border-amber-500/30">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base leading-tight">037Studio</h3>
+                        <p class="text-[10px] text-amber-600 font-semibold">ใบสรุปยืนยันการจองออนไลน์</p>
                     </div>
                 </div>
+                <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono" id="stRecBookingNo">#BOOKING</span>
+            </div>
 
-                <!-- สรุปยอดเงินและมัดจำ -->
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1.5 text-xs">
-                    <div class="flex justify-between text-slate-600">
-                        <span>ยอดบริการรวมทั้งหมด:</span>
-                        <strong class="text-slate-900" id="recTotalAmt">฿0.00</strong>
-                    </div>
-                    <div class="flex justify-between text-emerald-600 font-medium">
-                        <span>ชำระมัดจำแล้ว:</span>
-                        <strong id="recDepositAmt">฿0.00</strong>
-                    </div>
-                    <div class="flex justify-between text-amber-700 font-bold border-t border-slate-200 pt-1.5 text-sm">
-                        <span>คงเหลือชำระหน้างาน:</span>
-                        <span id="recBalanceAmt">฿0.00</span>
-                    </div>
+            <!-- เวลาและวันที่นัดหมาย (เน้นจุดนี้) -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 text-white p-4 rounded-2xl text-center space-y-1 shadow-md">
+                <span class="text-[10px] text-amber-300 font-medium block">⏰ เวลาเข้าใช้บริการ / นัดหมาย</span>
+                <div class="text-2xl font-extrabold text-amber-400 tracking-tight" id="stRecTime">00:00 - 00:00 น.</div>
+                <div class="text-xs font-bold text-slate-200" id="stRecDate">DD-MM-YYYY</div>
+            </div>
+
+            <!-- ข้อมูลลูกค้า & บริการ -->
+            <div class="space-y-2.5 text-xs">
+                <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                    <span class="text-slate-400 text-[11px]">ชื่อลูกค้า:</span>
+                    <strong class="text-slate-800" id="stRecCustName">-</strong>
                 </div>
-
-                <div class="text-[9px] text-slate-400 text-center leading-tight">
-                    *กรุณามาถึงก่อนเวลาประมาณ 10-15 นาที ขอบพระคุณที่ใช้บริการ 037Studio ครับ
+                <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                    <span class="text-slate-400 text-[11px]">เบอร์โทรศัพท์:</span>
+                    <strong class="text-slate-800 font-mono" id="stRecCustPhone">-</strong>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                    <span class="text-slate-400 text-[11px]">แพ็กเกจ/บริการ:</span>
+                    <strong class="text-slate-800 text-right max-w-[200px]" id="stRecPackage">-</strong>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-1.5" id="stRecLocationRow">
+                    <span class="text-slate-400 text-[11px]">สถานที่:</span>
+                    <strong class="text-slate-800 text-right max-w-[200px]" id="stRecLocation">-</strong>
                 </div>
             </div>
 
-            <!-- ปุ่มดำเนินการใบจอง -->
-            <div class="space-y-2 no-print">
-                <button onclick="window.print()" class="w-full py-2.5 bg-slate-900 text-amber-400 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-1.5">
+            <!-- สรุปยอดเงินและมัดจำ -->
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2 text-xs">
+                <div class="flex justify-between text-slate-600">
+                    <span>ยอดบริการรวมทั้งหมด:</span>
+                    <strong class="text-slate-900 text-sm" id="stRecTotalAmt">฿0.00</strong>
+                </div>
+                <div class="flex justify-between text-emerald-600 font-medium">
+                    <span>ชำระมัดจำแล้ว:</span>
+                    <strong id="stRecDepositAmt" class="text-sm">฿0.00</strong>
+                </div>
+                <div class="flex justify-between text-amber-700 font-bold border-t border-slate-200 pt-2 text-base">
+                    <span>คงเหลือชำระหน้างาน:</span>
+                    <span id="stRecBalanceAmt">฿0.00</span>
+                </div>
+            </div>
+
+            <div class="text-[10px] text-slate-400 text-center leading-relaxed">
+                *กรุณามาถึงก่อนเวลาประมาณ 10-15 นาที ขอบพระคุณที่ใช้บริการ 037Studio ครับ
+            </div>
+
+            <div class="pt-2 no-print">
+                <button onclick="window.print()" class="w-full py-3 bg-slate-900 text-amber-400 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2 shadow-md">
                     <i data-lucide="printer" class="w-4 h-4"></i>
                     <span>พิมพ์ / บันทึกใบจองเป็น PDF</span>
                 </button>
-                <div class="flex gap-2">
-                    <button onclick="copyReceiptText()" class="flex-1 py-2 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-1">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                        <span>คัดลอกข้อความส่ง LINE</span>
-                    </button>
-                    <button onclick="toggleReceiptModal(false)" class="py-2 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
-                        ปิด
-                    </button>
-                </div>
             </div>
-
         </div>
     </div>
 
-    <!-- DEPOSIT & SLIP UPLOAD MODAL -->
-    <div id="depositModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-        <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i data-lucide="credit-card" class="w-4 h-4 text-amber-500"></i>
-                    กรอกมัดจำ & แนบสลิปโอนเงิน
-                </h3>
-                <button onclick="toggleDepositModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <input type="hidden" id="modalBookingId">
-
-            <div class="space-y-3 text-xs">
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="block text-slate-700 font-medium">ยอดเงินมัดจำ (บาท):</label>
-                        <span class="text-[10px] text-amber-600 font-medium">*ระบบคำนวณมัดจำ 50% ให้อัตโนมัติ</span>
+    <!-- MAIN ADMIN APP WRAPPER -->
+    <div id="mainAdminApp">
+        <!-- Top App Bar -->
+        <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md no-print">
+            <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
+                        <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" 
+                             alt="037Studio Logo" 
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'camera\' class=\'w-5 h-5 text-amber-500\'></i>'; renderIcons();">
                     </div>
-                    <input type="number" id="inputDepositAmount" placeholder="เช่น 500" 
-                           class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs font-bold text-slate-800">
+                    <div>
+                        <h1 class="font-bold text-base leading-tight" id="appHeaderTitle">037Studio</h1>
+                        <p class="text-[10px] text-amber-400 font-medium" id="appHeaderSub">ระบบตรวจเช็คยอดจอง & ยอดมัดจำ</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="toggleSettingsModal(true)" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-amber-400 transition border border-slate-700">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="syncCalendar()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
+                        <i data-lucide="refresh-cw" class="w-4 h-4" id="iconSync"></i>
+                        <span class="hidden sm:inline">ดึงข้อมูลปฏิทิน</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main class="max-w-md mx-auto px-4 pt-4 space-y-4 no-print">
+
+            <!-- CALENDAR SECTION CARD -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="calendar" class="w-4 h-4 text-amber-500"></i>
+                        <h2 class="font-bold text-xs text-slate-900" id="calendarMonthTitle">กำลังโหลด...</h2>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="changeMonth(-1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="changeMonth(1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                        <a id="btnCalendarExternal" href="https://calendar.google.com/calendar/u/1?cid=c2lyaWNob2tsYXBraGFtQGdtYWlsLmNvbQ" target="_blank" class="ml-1 bg-slate-900 text-amber-400 text-[10px] font-semibold px-2 py-1 rounded-lg transition flex items-center gap-1">
+                            <i data-lucide="external-link" class="w-3 h-3"></i>
+                            <span>ปฏิทิน</span>
+                        </a>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-slate-700 font-medium mb-1">แนบไฟล์รูปสลิป:</label>
-                    <input type="file" id="inputSlipFile" accept="image/*" 
-                           class="w-full p-2 border border-slate-300 rounded-xl text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
-                    <p class="text-[10px] text-slate-400 mt-1">ไฟล์สลิปจะถูกอัปโหลดตรงไปยัง Google Drive โฟลเดอร์สลิปของร้าน</p>
+                <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 border-b border-slate-100 pb-1">
+                    <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarGrid"></div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="bg-white/90 border border-amber-300 p-3.5 rounded-2xl text-center font-medium text-amber-900 shadow-sm">
+                <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600 mr-2"></div>
+                <span id="loadingText" class="text-xs">กำลังเชื่อมต่อข้อมูลคิวจอง...</span>
+            </div>
+
+            <!-- ALERT BANNER -->
+            <div id="depositStatusBanner" class="rounded-2xl p-3.5 border transition-all duration-300 flex items-start gap-3 shadow-sm bg-emerald-50 border-emerald-200 text-emerald-800">
+                <i data-lucide="shield-check" class="w-5 h-5 text-emerald-500 shrink-0"></i>
+                <div class="text-xs">
+                    <span class="font-bold block" id="bannerTitle">สรุปภาพรวมวันที่เลือก</span>
+                    <span class="text-[10px] text-slate-600 block" id="bannerSub">เลือกวันที่ในปฏิทินด้านบนเพื่อดูตารางเวลาและยอดมัดจำ</span>
                 </div>
             </div>
 
-            <div class="flex gap-2 pt-2">
-                <button onclick="submitDepositAndSlip()" id="btnSaveDeposit" class="flex-1 py-3 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2">
-                    <span>บันทึกข้อมูล</span>
-                </button>
-                <button onclick="toggleDepositModal(false)" class="py-3 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
-                    ยกเลิก
-                </button>
+            <!-- HERO DASHBOARD CARD -->
+            <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+                
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-slate-400 font-medium tracking-wide">ยอดรวมจองวันที่ <span id="displaySelectedDate" class="text-amber-400 font-bold">-</span></span>
+                    <span id="valTotalBookings" class="text-[11px] bg-white/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">0 คิว</span>
+                </div>
+                
+                <div class="text-3xl font-extrabold tracking-tight text-white mb-4" id="valTotalSales">฿0.00</div>
+
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
+                    <div>
+                        <span class="text-slate-400 text-[10px] block">ยอดมัดจำที่ได้รับแล้ว</span>
+                        <span id="valTotalDeposit" class="font-bold text-emerald-400 text-sm">฿0.00</span>
+                        <span id="valDepositCount" class="text-[9px] text-slate-400 block truncate">0 คิวมีมัดจำ</span>
+                    </div>
+                    <div class="border-l border-white/10 pl-3">
+                        <span class="text-slate-400 text-[10px] block">คิวที่ยังไม่มีมัดจำ</span>
+                        <span id="valNoDepositCount" class="font-bold text-amber-400 text-sm">0 คิว</span>
+                        <span id="valPendingAmount" class="text-[9px] text-slate-400 block truncate">คงเหลือ ฿0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK AUDIT SUMMARY CARD -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
+                        สรุปยอดจองประจำเดือน (<span id="monthlyLabel">-</span>)
+                    </h2>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="text-slate-500 text-[10px] block">ยอดจองรวมทั้งเดือน</span>
+                        <span id="monthlyTotalSales" class="font-bold text-slate-800 text-sm">฿0.00</span>
+                    </div>
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <span class="text-slate-500 text-[10px] block">ยอดมัดจำรวมทั้งเดือน</span>
+                        <span id="monthlyTotalDeposit" class="font-bold text-emerald-600 text-sm">฿0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOOKING SCHEDULE LIST CARD -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center px-1">
+                    <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="clock" class="w-4 h-4 text-indigo-500"></i>
+                        ตารางคิวและเวลาเข้าใช้บริการ
+                    </h2>
+                    <span id="bookingListCount" class="text-[10px] font-medium text-slate-500">0 รายการ</span>
+                </div>
+                <div id="bookingListContainer" class="space-y-2"></div>
+            </div>
+
+        </main>
+
+        <!-- Modal ใบจองออนไลน์ (Digital Receipt Preview Modal) -->
+        <div id="receiptModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
+            <div class="modal-box bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 my-auto relative">
+                
+                <!-- การ์ดใบจองออนไลน์ -->
+                <div id="receiptCard" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" class="w-10 h-10 rounded-full object-cover border border-amber-500/30">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">037Studio</h3>
+                                <p class="text-[10px] text-amber-600 font-semibold">ใบสรุปยืนยันการจองออนไลน์</p>
+                            </div>
+                        </div>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono" id="recBookingNo">#BOOK-01</span>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-slate-900 to-amber-950 text-white p-3.5 rounded-2xl text-center space-y-1 shadow-md">
+                        <span class="text-[10px] text-amber-300 font-medium block">⏰ เวลาเข้าใช้บริการ / นัดหมาย</span>
+                        <div class="text-xl font-extrabold text-amber-400 tracking-tight" id="recTime">18:00 - 19:00 น.</div>
+                        <div class="text-[12px] font-bold text-slate-200" id="recDate">28-10-2026</div>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                            <span class="text-slate-400 text-[11px]">ชื่อลูกค้า:</span>
+                            <strong class="text-slate-800" id="recCustName">คุณลูกค้า</strong>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                            <span class="text-slate-400 text-[11px]">เบอร์โทรศัพท์:</span>
+                            <strong class="text-slate-800 font-mono" id="recCustPhone">095-671-3869</strong>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                            <span class="text-slate-400 text-[11px]">แพ็กเกจ/บริการ:</span>
+                            <strong class="text-slate-800 text-right max-w-[180px]" id="recPackage">แพ็กเกจถ่ายภาพ Studio</strong>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1.5" id="recLocationRow">
+                            <span class="text-slate-400 text-[11px]">สถานที่:</span>
+                            <strong class="text-slate-800 text-right max-w-[180px]" id="recLocation">037Studio ขอนแก่น</strong>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1.5 text-xs">
+                        <div class="flex justify-between text-slate-600">
+                            <span>ยอดบริการรวมทั้งหมด:</span>
+                            <strong class="text-slate-900" id="recTotalAmt">฿0.00</strong>
+                        </div>
+                        <div class="flex justify-between text-emerald-600 font-medium">
+                            <span>ชำระมัดจำแล้ว:</span>
+                            <strong id="recDepositAmt">฿0.00</strong>
+                        </div>
+                        <div class="flex justify-between text-amber-700 font-bold border-t border-slate-200 pt-1.5 text-sm">
+                            <span>คงเหลือชำระหน้างาน:</span>
+                            <span id="recBalanceAmt">฿0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="text-[9px] text-slate-400 text-center leading-tight">
+                        *กรุณามาถึงก่อนเวลาประมาณ 10-15 นาที ขอบพระคุณที่ใช้บริการ 037Studio ครับ
+                    </div>
+                </div>
+
+                <div class="space-y-2 no-print">
+                    <button onclick="window.print()" class="w-full py-2.5 bg-slate-900 text-amber-400 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-1.5">
+                        <i data-lucide="printer" class="w-4 h-4"></i>
+                        <span>พิมพ์ / บันทึกใบจองเป็น PDF</span>
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="copyReceiptText()" class="flex-1 py-2 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-1">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span>คัดลอกข้อความส่ง LINE</span>
+                        </button>
+                        <button onclick="toggleReceiptModal(false)" class="py-2 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                            ปิด
+                        </button>
+                    </div>
+                </div>
+
             </div>
         </div>
+
+        <!-- DEPOSIT & SLIP UPLOAD MODAL -->
+        <div id="depositModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="credit-card" class="w-4 h-4 text-amber-500"></i>
+                        กรอกมัดจำ & แนบสลิปโอนเงิน
+                    </h3>
+                    <button onclick="toggleDepositModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <input type="hidden" id="modalBookingId">
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-slate-700 font-medium">ยอดเงินมัดจำ (บาท):</label>
+                            <span class="text-[10px] text-amber-600 font-medium">*คำนวณมัดจำ 50% ให้อัตโนมัติ</span>
+                        </div>
+                        <input type="number" id="inputDepositAmount" placeholder="เช่น 500" 
+                               class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs font-bold text-slate-800">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">แนบไฟล์รูปสลิป:</label>
+                        <input type="file" id="inputSlipFile" accept="image/*" 
+                               class="w-full p-2 border border-slate-300 rounded-xl text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+                        <p class="text-[10px] text-slate-400 mt-1">ไฟล์สลิปจะถูกอัปโหลดตรงไปยัง Google Drive โฟลเดอร์สลิปของร้าน</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="submitDepositAndSlip()" id="btnSaveDeposit" class="flex-1 py-3 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2">
+                        <span>บันทึกข้อมูล</span>
+                    </button>
+                    <button onclick="toggleDepositModal(false)" class="py-3 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS MODAL -->
+        <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+            <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="settings" class="w-4 h-4 text-amber-500"></i>
+                        ตั้งค่าความเชื่อมโยง Google Sheets / Script
+                    </h3>
+                    <button onclick="toggleSettingsModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">Google Apps Script Web App URL:</label>
+                        <input type="url" id="inputScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" 
+                               class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs">
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="saveSettings()" class="flex-1 py-2.5 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition">
+                        บันทึกการตั้งค่า
+                    </button>
+                    <button onclick="toggleSettingsModal(false)" class="py-2.5 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Bottom Navigation Bar -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 no-print">
+            <div class="max-w-md mx-auto h-16 flex justify-around items-center px-2">
+                <button onclick="switchTab('studio')" id="tabBtnStudio" class="flex flex-col items-center gap-1 text-amber-600 font-bold">
+                    <i data-lucide="camera" class="w-5 h-5"></i>
+                    <span class="text-[10px]">037Studio</span>
+                </button>
+                
+                <button onclick="switchTab('photobooth')" id="tabBtnPhotobooth" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-medium">PhotoBooth</span>
+                </button>
+
+                <a href="https://docs.google.com/spreadsheets" target="_blank" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span class="text-[10px] font-medium">Google Sheet</span>
+                </a>
+            </div>
+        </nav>
     </div>
-
-    <!-- SETTINGS MODAL -->
-    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-        <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                    <i data-lucide="settings" class="w-4 h-4 text-amber-500"></i>
-                    ตั้งค่าความเชื่อมโยง Google Sheets / Script
-                </h3>
-                <button onclick="toggleSettingsModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <div class="space-y-3 text-xs">
-                <div>
-                    <label class="block text-slate-700 font-medium mb-1">Google Apps Script Web App URL:</label>
-                    <input type="url" id="inputScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" 
-                           class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs">
-                </div>
-            </div>
-
-            <div class="flex gap-2">
-                <button onclick="saveSettings()" class="flex-1 py-2.5 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition">
-                    บันทึกการตั้งค่า
-                </button>
-                <button onclick="toggleSettingsModal(false)" class="py-2.5 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
-                    ยกเลิก
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40 no-print">
-        <div class="max-w-md mx-auto h-16 flex justify-around items-center px-2">
-            <button onclick="switchTab('studio')" id="tabBtnStudio" class="flex flex-col items-center gap-1 text-amber-600 font-bold">
-                <i data-lucide="camera" class="w-5 h-5"></i>
-                <span class="text-[10px]">037Studio</span>
-            </button>
-            
-            <button onclick="switchTab('photobooth')" id="tabBtnPhotobooth" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
-                <i data-lucide="sparkles" class="w-5 h-5"></i>
-                <span class="text-[10px] font-medium">PhotoBooth</span>
-            </button>
-
-            <a href="https://docs.google.com/spreadsheets" target="_blank" class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-700">
-                <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
-                <span class="text-[10px] font-medium">Google Sheet</span>
-            </a>
-        </div>
-    </nav>
 
     <script>
         const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWidCv-wKZBRjxkmDOUFsjV59CdO_N_qBUYAJW6Q-Thozr3hUs1NPKrOYremBYpXPX/exec";
@@ -407,7 +476,6 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        // แปลงรูปแบบวันที่ YYYY-MM-DD เป็น DD-MM-YYYY
         function formatDateToDDMMYYYY(dateStr) {
             if (!dateStr) return '';
             const parts = dateStr.split('-');
@@ -415,6 +483,12 @@
                 return `${parts[2]}-${parts[1]}-${parts[0]}`;
             }
             return dateStr;
+        }
+
+        // สร้างลิงก์ URL ใบจองออนไลน์เฉพาะงาน
+        function getReceiptPublicUrl(bookingId) {
+            const baseUrl = window.location.origin + window.location.pathname;
+            return `${baseUrl}?receipt=${bookingId}&type=${currentTab}`;
         }
 
         function switchTab(type) {
@@ -459,17 +533,15 @@
             initApp(true);
         }
 
+        // เมื่อกดกรอกยอดมัดจำ ให้คำนวณมัดจำ 50% ให้อัตโนมัติก่อนเสมอ
         function toggleDepositModal(show, bookingId = '', currentDeposit = 0, totalPrice = 0) {
             const modal = document.getElementById("depositModal");
             if (show) {
                 document.getElementById("modalBookingId").value = bookingId;
                 
-                let depositVal = currentDeposit;
-                if ((!depositVal || Number(depositVal) === 0) && totalPrice > 0) {
-                    depositVal = totalPrice * 0.5;
-                }
-                
-                document.getElementById("inputDepositAmount").value = depositVal || '';
+                // คำนวณ 50% ของยอดรวมเป็นค่าวางต้นเสมอ
+                let calc50 = (totalPrice && totalPrice > 0) ? (totalPrice * 0.5) : currentDeposit;
+                document.getElementById("inputDepositAmount").value = calc50 || '';
                 document.getElementById("inputSlipFile").value = '';
                 modal.classList.remove("hidden");
             } else {
@@ -517,7 +589,15 @@
             }
         }
 
-        // คัดลอกข้อความสรุปใบจองส่งเข้า LINE (พร้อมวันที่ DD-MM-YYYY และ ลิงก์ใบจองออนไลน์)
+        // คัดลอกลิงก์ใบจองเฉพาะงาน
+        function copySingleReceiptLink(bookingId) {
+            const link = getReceiptPublicUrl(bookingId);
+            navigator.clipboard.writeText(link).then(() => {
+                alert("คัดลอกลิงก์ใบจองออนไลน์เฉพาะงานนี้เรียบร้อยแล้ว!\n" + link);
+            });
+        }
+
+        // คัดลอกข้อความสรุปส่งเข้า LINE พร้อมแนบลิงก์ใบจองออนไลน์เฉพาะงาน
         function copyReceiptText() {
             if (!activeReceiptData) return;
             const b = activeReceiptData;
@@ -526,10 +606,7 @@
             const balance = Math.max(0, total - deposit);
             const formattedDate = formatDateToDDMMYYYY(selectedDateStr);
 
-            // ดึงลิงก์เอกสารจากระบบ หรือใช้ URL ปัจจุบัน
-            let receiptUrl = window.location.href;
-            const docMatch = (b.title + "\n" + b.desc).match(/(https?:\/\/[^\s\n\r]+booking[^\s\n\r]*)/i);
-            if (docMatch) receiptUrl = docMatch[1];
+            const receiptUrl = getReceiptPublicUrl(b.id);
 
             const text = `📌 ใบสรุปยืนยันการจอง 037Studio
 ------------------------------
@@ -786,7 +863,7 @@
             document.getElementById("bookingListCount").innerText = `${(data.bookings || []).length} รายการ`;
 
             if (data.bookings && data.bookings.length > 0) {
-                data.bookings.forEach((b, idx) => {
+                data.bookings.forEach((b) => {
                     const isFullyPaid = Number(b.depositPrice) >= Number(b.totalPrice) && Number(b.totalPrice) > 0;
                     const isDeposit = Number(b.depositPrice) > 0;
                     const formattedDesc = formatBookingDescription(b.title, b.desc, b.location);
@@ -848,6 +925,12 @@
                                     <span>ใบจองออนไลน์</span>
                                 </button>
 
+                                <button onclick="copySingleReceiptLink('${b.id}')" 
+                                        class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0 border border-slate-200">
+                                    <i data-lucide="link" class="w-3.5 h-3.5 text-slate-500"></i>
+                                    <span>🔗 คัดลอกลิงก์ใบจอง</span>
+                                </button>
+
                                 ${b.slipUrl ? `
                                     <a href="${b.slipUrl}" target="_blank" 
                                        class="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0 border border-slate-200">
@@ -863,6 +946,79 @@
                 container.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center text-xs text-slate-400 border border-slate-200">ไม่มีคิวจองในวันที่เลือก</div>`;
             }
 
+            renderIcons();
+        }
+
+        // ฟังก์ชันตรวจจับเปิดใบจองออนไลน์สาธารณะ (Standalone Public Page)
+        async function checkPublicReceiptMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const receiptId = urlParams.get('receipt');
+            const type = urlParams.get('type') || 'studio';
+
+            if (receiptId) {
+                document.getElementById("mainAdminApp").classList.add("hidden");
+                document.getElementById("standaloneReceipt").classList.remove("hidden");
+
+                try {
+                    // ดึงข้อมูลคิวจาก API
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const res = await fetch(`${SCRIPT_URL}?type=${type}&date=${todayStr}`, { redirect: "follow" }).then(r => r.json());
+                    
+                    let targetBooking = null;
+                    if (res && res.data && res.data.bookings) {
+                        targetBooking = res.data.bookings.find(b => String(b.id) === String(receiptId));
+                    }
+
+                    if (targetBooking) {
+                        renderStandaloneReceipt(targetBooking, res.data.date);
+                    } else {
+                        document.getElementById("standaloneReceiptCard").innerHTML = `
+                            <div class="text-center p-6 space-y-3">
+                                <i data-lucide="alert-circle" class="w-12 h-12 text-amber-500 mx-auto"></i>
+                                <h3 class="font-bold text-slate-800">ไม่พบข้อมูลใบจองนี้ในระบบ</h3>
+                                <p class="text-xs text-slate-500">กรุณาตรวจสอบลิงก์อีกครั้ง หรือติดต่อทางร้าน 037Studio</p>
+                            </div>
+                        `;
+                        renderIcons();
+                    }
+                } catch (err) {
+                    console.error("Fetch Public Receipt Error:", err);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function renderStandaloneReceipt(b, dateStr) {
+            const bNo = b.title.match(/#([0-9A-Z]+)/i);
+            document.getElementById("stRecBookingNo").innerText = bNo ? `#${bNo[1]}` : `#${b.id.substring(0, 8)}`;
+            
+            document.getElementById("stRecTime").innerText = `${b.time} น.`;
+            document.getElementById("stRecDate").innerText = formatDateToDDMMYYYY(dateStr || selectedDateStr);
+
+            const nameMatch = (b.title + "\n" + b.desc).match(/(?:ชื่อ|ชื่อเล่น)\s*[:=]?\s*([^\n\r]+)/i);
+            document.getElementById("stRecCustName").innerText = nameMatch ? nameMatch[1].trim() : b.title;
+
+            const phoneMatch = (b.title + "\n" + b.desc).match(/(?:โทร|เบอร์โทรศัพท์)\s*[:=]?\s*(\+?[0-9-]+)/i);
+            document.getElementById("stRecCustPhone").innerText = phoneMatch ? phoneMatch[1].trim() : "ไม่ระบุ";
+
+            document.getElementById("stRecPackage").innerText = b.title;
+            
+            if (b.location) {
+                document.getElementById("stRecLocationRow").classList.remove("hidden");
+                document.getElementById("stRecLocation").innerText = b.location;
+            } else {
+                document.getElementById("stRecLocationRow").classList.add("hidden");
+            }
+
+            const total = Number(b.totalPrice || 0);
+            const deposit = Number(b.depositPrice || 0);
+            const balance = Math.max(0, total - deposit);
+
+            document.getElementById("stRecTotalAmt").innerText = `฿${total.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("stRecDepositAmt").innerText = `฿${deposit.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("stRecBalanceAmt").innerText = `฿${balance.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            
             renderIcons();
         }
 
@@ -896,7 +1052,7 @@
 
             } catch (err) {
                 alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
-            } finally {
+            } font-semibold; {
                 loading.classList.add("hidden");
             }
         }
@@ -956,8 +1112,11 @@
             alert("ไม่สามารถดึงข้อมูลได้: " + (err.message || err));
         }
 
-        window.onload = () => {
-            initApp();
+        window.onload = async () => {
+            const isPublicMode = await checkPublicReceiptMode();
+            if (!isPublicMode) {
+                initApp();
+            }
         };
     </script>
 </body>
