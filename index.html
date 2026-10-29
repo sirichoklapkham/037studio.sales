@@ -255,19 +255,30 @@
                     </div>
                 </div>
 
-                <!-- STAFF VIEW BOXES -->
+                <!-- STAFF VIEW BOXES (รูปแบบที่ 2: Celebration & Reward Card) -->
                 <div id="staffSummaryBoxes" class="hidden space-y-3">
-                    <div onclick="toggleCommissionDetailModal(true)" class="bg-gradient-to-r from-amber-500 to-amber-600 p-4 rounded-2xl text-slate-950 flex justify-between items-center shadow-md cursor-pointer hover:brightness-105 active:scale-95 transition">
-                        <div>
-                            <span class="text-[11px] font-bold text-slate-900 block flex items-center gap-1">
-                                <span>💰 ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
-                                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-slate-900"></i>
-                            </span>
-                            <span class="text-2xl font-extrabold" id="staffMonthlyCommissionTotal">฿0.00</span>
-                        </div>
-                        <div class="text-right flex items-center gap-1">
-                            <span class="text-[10px] font-bold bg-slate-950/20 px-2.5 py-1 rounded-full text-slate-900" id="staffMonthlyTotalQueues">0 คิว</span>
-                            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-900"></i>
+                    <div onclick="toggleCommissionDetailModal(true)" 
+                         class="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 p-4 rounded-2xl text-slate-950 shadow-lg relative overflow-hidden cursor-pointer hover:brightness-105 active:scale-95 transition border border-amber-300">
+                        
+                        <!-- Confetti & Sparkles Decorative Background -->
+                        <div class="absolute -right-3 -top-3 opacity-20 text-4xl select-none">🎉</div>
+                        <div class="absolute right-12 bottom-1 opacity-20 text-3xl select-none">✨</div>
+                        <div class="absolute left-1/2 top-1 opacity-15 text-2xl select-none">🪙</div>
+
+                        <div class="flex justify-between items-end relative z-10">
+                            <div>
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="text-base leading-none">💰</span>
+                                    <span class="text-[11px] font-bold text-slate-900 tracking-tight">ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
+                                    <span class="bg-slate-950 text-amber-300 text-[9px] px-2 py-0.5 rounded-full font-bold shadow-sm">เก่งมาก! ✨</span>
+                                </div>
+                                <div class="text-3xl font-black tracking-tight text-slate-950 drop-shadow-sm" id="staffMonthlyCommissionTotal">฿0.00</div>
+                            </div>
+                            
+                            <div class="flex items-center gap-1 bg-slate-950/90 text-amber-300 px-3 py-1.5 rounded-xl shadow-md border border-amber-400/30">
+                                <span class="text-xs font-black" id="staffMonthlyTotalQueues">0 คิว</span>
+                                <i data-lucide="chevron-right" class="w-4 h-4 text-amber-400"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -308,12 +319,13 @@
                     </button>
                 </div>
 
-                <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-4 rounded-2xl text-slate-950 flex justify-between items-center shadow-md shrink-0">
-                    <div>
+                <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 p-4 rounded-2xl text-slate-950 flex justify-between items-center shadow-md shrink-0 relative overflow-hidden border border-amber-300">
+                    <div class="absolute -right-2 -top-2 opacity-20 text-3xl">🎉</div>
+                    <div class="relative z-10">
                         <span class="text-[11px] font-bold text-slate-900 block">💰 ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
-                        <span class="text-2xl font-extrabold" id="modalCommTotalAmt">฿0.00</span>
+                        <span class="text-2xl font-black" id="modalCommTotalAmt">฿0.00</span>
                     </div>
-                    <span class="text-xs font-extrabold bg-slate-950/20 px-3 py-1 rounded-full text-slate-900" id="modalCommTotalQueues">0 คิว</span>
+                    <span class="text-xs font-black bg-slate-950/90 text-amber-300 px-3 py-1.5 rounded-xl shadow-sm relative z-10" id="modalCommTotalQueues">0 คิว</span>
                 </div>
 
                 <div class="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -778,19 +790,16 @@
 
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
-        // ฟังก์ชันตรวจสอบว่าเป็นแพ็กเกจที่คิดคอมมิชชั่นหรือไม่ (กรองงานกราฟิก/ออกแบบออก)
         function isEligibleCommissionPackage(title) {
             if (!title) return false;
             const clean = title.toString().trim().toLowerCase();
 
-            // ลบรายการกราฟิก / ออกแบบ / แต่งรูป / ไฟล์รูป ออก
             if (clean.includes("ออกแบบ") || clean.includes("กราฟิก") || clean.includes("แต่งรูป") || clean.includes("ไฟล์รูป")) {
                 return false;
             }
             return true;
         }
 
-        // จัดกลุ่มชื่อแพ็กเกจให้กระชับและไม่ซ้ำซ้อน
         function getNormalizedPackageName(rawTitle) {
             if (!rawTitle) return "แพ็กเกจทั่วไป";
             let name = rawTitle.split('-')[0].trim();
@@ -804,19 +813,16 @@
             return name;
         }
 
-        // การตั้งค่าการคำนวณค่าคอมมิชชั่นพนักงาน
         function getCommissionAmount(title, desc = "") {
             if (!title || !isEligibleCommissionPackage(title)) return 0;
             
             const cleanTitle = title.toString().trim();
             let baseComm = 20;
 
-            // กลุ่มเซลฟี่สตูดิโอ (ครึ่งตัว) ได้ 10 บาทต่อคิว
             if (cleanTitle.includes("เซลฟี่สตูดิโอ ครึ่งตัว") || cleanTitle.includes("ครึ่งตัว 10 นาที") || cleanTitle.includes("ครึ่งตัว 20 นาที")) {
                 baseComm = 10;
             }
 
-            // คำนวณ Bonus พิเศษที่เจ้าของร้านเพิ่ม/ลดให้
             let bonusComm = 0;
             if (desc) {
                 const bonusMatch = desc.match(/คอมฯ พิเศษ\s*[:=]?\s*([0-9,-.]+)/i);
@@ -1497,7 +1503,6 @@
 
                 if (d.bookings && Array.isArray(d.bookings)) {
                     d.bookings.forEach(b => {
-                        // กรองรายการที่ไม่ใช่คอมมิชชั่นพนักงานออก (เช่น ออกแบบ 21.11.69)
                         if (isEligibleCommissionPackage(b.title)) {
                             totalQueues++;
                             mCommission += getCommissionAmount(b.title, b.desc);
@@ -1510,16 +1515,13 @@
                 }
             });
 
-            // อัปเดตฝั่งเจ้าของร้าน
             document.getElementById("monthlyTotalSales").innerText = `฿${mSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("monthlyTotalDeposit").innerText = `฿${mDeposit.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("monthlyTotalCommission").innerText = `฿${mCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
 
-            // อัปเดตฝั่งพนักงาน
             document.getElementById("staffMonthlyCommissionTotal").innerText = `฿${mCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("staffMonthlyTotalQueues").innerText = `${totalQueues} คิว`;
 
-            // อัปเดต Modal ป๊อบอัพคอมมิชชั่น
             document.getElementById("modalCommTotalAmt").innerText = `฿${mCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("modalCommTotalQueues").innerText = `${totalQueues} คิว`;
 
