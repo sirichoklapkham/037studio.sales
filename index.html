@@ -19,7 +19,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest" defer></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap');
         body { 
             font-family: 'Prompt', sans-serif; 
             -webkit-tap-highlight-color: transparent;
@@ -159,6 +159,107 @@
                 </button>
             </div>
 
+            <!-- HERO DASHBOARD CARD (OWNER VIEW) -->
+            <div id="ownerDashboardCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+                
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-slate-400 font-medium tracking-wide">ยอดรวมจองวันที่ <span id="displaySelectedDate" class="text-amber-400 font-bold">-</span></span>
+                    <span id="valTotalBookings" class="text-[11px] bg-white/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">0 คิว</span>
+                </div>
+                
+                <div class="text-3xl font-extrabold tracking-tight text-white mb-4" id="valTotalSales">฿0.00</div>
+
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
+                    <div>
+                        <span class="text-slate-400 text-[10px] block">ยอดมัดจำที่ได้รับแล้ว</span>
+                        <span id="valTotalDeposit" class="font-bold text-emerald-400 text-sm">฿0.00</span>
+                        <span id="valDepositCount" class="text-[9px] text-slate-400 block truncate">0 คิวมีมัดจำ</span>
+                    </div>
+                    <div class="border-l border-white/10 pl-3">
+                        <span class="text-slate-400 text-[10px] block">คอมมิชชั่นพนักงาน (ประจำวัน)</span>
+                        <span id="valDailyCommission" class="font-bold text-amber-400 text-sm">฿0.00</span>
+                        <span id="valPendingAmount" class="text-[9px] text-slate-400 block truncate">คงเหลือ ฿0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MONTHLY COMMISSION AUDIT SUMMARY CARD (ย้ายมาไว้ข้างบนปฏิทิน + พับเก็บได้) -->
+            <div id="summaryCardContainer" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5" id="summaryCardHeaderTitle">
+                        <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+                        สรุปยอดคอมมิชชั่นประจำเดือน (<span id="monthlyLabel">-</span>)
+                    </h2>
+                    <button onclick="toggleCommissionCollapse()" id="btnCollapseComm" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition flex items-center gap-1 text-[10px] font-bold">
+                        <span id="lblCollapseComm">พับเก็บ</span>
+                        <i data-lucide="chevron-up" id="iconCollapseComm" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                
+                <div id="commCollapsibleContent">
+                    <!-- OWNER VIEW BOXES -->
+                    <div id="ownerSummaryBoxes" class="grid grid-cols-3 gap-2 text-xs">
+                        <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <span class="text-slate-500 text-[9px] block truncate">ยอดจองรวม</span>
+                            <span id="monthlyTotalSales" class="font-bold text-slate-800 text-xs sm:text-sm">฿0.00</span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <span class="text-slate-500 text-[9px] block truncate">มัดจำรวม</span>
+                            <span id="monthlyTotalDeposit" class="font-bold text-emerald-600 text-xs sm:text-sm">฿0.00</span>
+                        </div>
+                        <div onclick="toggleCommissionDetailModal(true)" class="bg-amber-50/80 p-2 rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-100/80 active:scale-95 transition shadow-sm">
+                            <span class="text-amber-900 text-[9px] font-bold block truncate flex items-center justify-between">
+                                <span>คอมมิชชั่นพนักงาน</span>
+                                <i data-lucide="chevron-right" class="w-3 h-3 text-amber-600"></i>
+                            </span>
+                            <span id="monthlyTotalCommission" class="font-bold text-amber-600 text-xs sm:text-sm">฿0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- STAFF VIEW BOXES (ปรับแก้ตัวอักษรเด่นชัด ปรับโทนสีสวยงาม) -->
+                    <div id="staffSummaryBoxes" class="hidden">
+                        <div onclick="toggleCommissionDetailModal(true)" 
+                             class="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 p-4 rounded-2xl text-slate-950 shadow-md relative overflow-hidden cursor-pointer hover:brightness-105 active:scale-95 transition border border-amber-300">
+                            
+                            <!-- Confetti Background Elements -->
+                            <div class="absolute -right-3 -top-3 opacity-20 text-4xl select-none">🎉</div>
+                            <div class="absolute right-12 bottom-1 opacity-20 text-3xl select-none">✨</div>
+
+                            <div class="space-y-2.5 relative z-10">
+                                <!-- Title Header -->
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-base leading-none">💰</span>
+                                    <span class="text-[12px] font-bold text-slate-950 tracking-tight">ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
+                                </div>
+
+                                <!-- Big Price & Queue Capsule -->
+                                <div class="flex justify-between items-end">
+                                    <div class="text-3xl font-black tracking-tight text-slate-950 drop-shadow-sm" id="staffMonthlyCommissionTotal">฿0.00</div>
+                                    
+                                    <div class="flex items-center gap-1 bg-slate-950 text-amber-400 px-3 py-1.5 rounded-xl shadow-md border border-amber-400/30">
+                                        <span class="text-xs font-black" id="staffMonthlyTotalQueues">0 คิว</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-amber-400"></i>
+                                    </div>
+                                </div>
+
+                                <!-- High Contrast Breakdown Boxes (เด่นชัด กระแทกตา) -->
+                                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-950/20 text-[11px]">
+                                    <div class="bg-amber-600/20 p-2 rounded-xl flex justify-between items-center border border-amber-700/30">
+                                        <span class="text-slate-950 font-bold">คอมฯ แพ็กเกจ:</span>
+                                        <strong class="text-slate-950 font-black text-xs" id="staffBaseCommissionTotal">฿0.00</strong>
+                                    </div>
+                                    <div class="bg-amber-600/20 p-2 rounded-xl flex justify-between items-center border border-amber-700/30">
+                                        <span class="text-slate-950 font-bold">โบนัสพิเศษ:</span>
+                                        <strong class="text-slate-950 font-black text-xs" id="staffBonusCommissionTotal">+฿0.00</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- CALENDAR SECTION CARD -->
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
                 <div class="flex justify-between items-center">
@@ -202,104 +303,6 @@
                 </div>
             </div>
 
-            <!-- HERO DASHBOARD CARD (OWNER VIEW) -->
-            <div id="ownerDashboardCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
-                
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-xs text-slate-400 font-medium tracking-wide">ยอดรวมจองวันที่ <span id="displaySelectedDate" class="text-amber-400 font-bold">-</span></span>
-                    <span id="valTotalBookings" class="text-[11px] bg-white/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">0 คิว</span>
-                </div>
-                
-                <div class="text-3xl font-extrabold tracking-tight text-white mb-4" id="valTotalSales">฿0.00</div>
-
-                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
-                    <div>
-                        <span class="text-slate-400 text-[10px] block">ยอดมัดจำที่ได้รับแล้ว</span>
-                        <span id="valTotalDeposit" class="font-bold text-emerald-400 text-sm">฿0.00</span>
-                        <span id="valDepositCount" class="text-[9px] text-slate-400 block truncate">0 คิวมีมัดจำ</span>
-                    </div>
-                    <div class="border-l border-white/10 pl-3">
-                        <span class="text-slate-400 text-[10px] block">คอมมิชชั่นพนักงาน (ประจำวัน)</span>
-                        <span id="valDailyCommission" class="font-bold text-amber-400 text-sm">฿0.00</span>
-                        <span id="valPendingAmount" class="text-[9px] text-slate-400 block truncate">คงเหลือ ฿0.00</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- QUICK AUDIT SUMMARY CARD (OWNER & STAFF CLICKABLE) -->
-            <div id="summaryCardContainer" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
-                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                    <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5" id="summaryCardHeaderTitle">
-                        <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
-                        สรุปยอดจองประจำเดือน (<span id="monthlyLabel">-</span>)
-                    </h2>
-                </div>
-                
-                <!-- OWNER VIEW BOXES -->
-                <div id="ownerSummaryBoxes" class="grid grid-cols-3 gap-2 text-xs">
-                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                        <span class="text-slate-500 text-[9px] block truncate">ยอดจองรวม</span>
-                        <span id="monthlyTotalSales" class="font-bold text-slate-800 text-xs sm:text-sm">฿0.00</span>
-                    </div>
-                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                        <span class="text-slate-500 text-[9px] block truncate">มัดจำรวม</span>
-                        <span id="monthlyTotalDeposit" class="font-bold text-emerald-600 text-xs sm:text-sm">฿0.00</span>
-                    </div>
-                    <div onclick="toggleCommissionDetailModal(true)" class="bg-amber-50/80 p-2 rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-100/80 active:scale-95 transition shadow-sm">
-                        <span class="text-amber-900 text-[9px] font-bold block truncate flex items-center justify-between">
-                            <span>คอมมิชชั่นพนักงาน</span>
-                            <i data-lucide="chevron-right" class="w-3 h-3 text-amber-600"></i>
-                        </span>
-                        <span id="monthlyTotalCommission" class="font-bold text-amber-600 text-xs sm:text-sm">฿0.00</span>
-                    </div>
-                </div>
-
-                <!-- STAFF VIEW BOXES (แยกยอดคอมมิชชั่นพื้นฐาน & โบนัสพิเศษ จากเจ้าของร้าน) -->
-                <div id="staffSummaryBoxes" class="hidden space-y-3">
-                    <div onclick="toggleCommissionDetailModal(true)" 
-                         class="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 p-4 rounded-2xl text-slate-950 shadow-lg relative overflow-hidden cursor-pointer hover:brightness-105 active:scale-95 transition border border-amber-300">
-                        
-                        <!-- Confetti Background Elements -->
-                        <div class="absolute -right-3 -top-3 opacity-20 text-4xl select-none">🎉</div>
-                        <div class="absolute right-12 bottom-1 opacity-20 text-3xl select-none">✨</div>
-
-                        <div class="space-y-2 relative z-10">
-                            <!-- Header & Tag -->
-                            <div class="flex justify-between items-center">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-base leading-none">💰</span>
-                                    <span class="text-[11px] font-bold text-slate-900 tracking-tight">ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
-                                </div>
-                                <span class="bg-slate-950 text-amber-300 text-[9px] px-2.5 py-0.5 rounded-full font-bold shadow-sm">เก่งมาก! ✨</span>
-                            </div>
-
-                            <!-- Total Commission Big Amount -->
-                            <div class="flex justify-between items-end">
-                                <div class="text-3xl font-black tracking-tight text-slate-950 drop-shadow-sm" id="staffMonthlyCommissionTotal">฿0.00</div>
-                                
-                                <div class="flex items-center gap-1 bg-slate-950/90 text-amber-300 px-3 py-1.5 rounded-xl shadow-md border border-amber-400/30">
-                                    <span class="text-xs font-black" id="staffMonthlyTotalQueues">0 คิว</span>
-                                    <i data-lucide="chevron-right" class="w-4 h-4 text-amber-400"></i>
-                                </div>
-                            </div>
-
-                            <!-- Breakdown Details Row (วงสีเขียว) -->
-                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-950/20 text-[11px]">
-                                <div class="bg-slate-950/10 p-2 rounded-xl flex justify-between items-center border border-slate-950/10">
-                                    <span class="text-slate-900 font-semibold">คอมฯ แพ็กเกจ:</span>
-                                    <strong class="text-slate-950 font-black" id="staffBaseCommissionTotal">฿0.00</strong>
-                                </div>
-                                <div class="bg-slate-950/10 p-2 rounded-xl flex justify-between items-center border border-slate-950/10">
-                                    <span class="text-slate-900 font-semibold">โบนัสพิเศษ:</span>
-                                    <strong class="text-slate-950 font-black" id="staffBonusCommissionTotal">+฿0.00</strong>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- BUTTON ADD BOOKING -->
             <div class="flex justify-between items-center px-1">
                 <button onclick="toggleAddBookingModal(true)" class="w-full py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-2xl text-xs transition flex items-center justify-center gap-2 shadow-md">
@@ -322,7 +325,7 @@
 
         </main>
 
-        <!-- MODAL รายละเอียดสรุปแพ็กเกจคอมมิชชั่นประจำเดือน (ทั้งเจ้าของร้าน & พนักงาน) -->
+        <!-- MODAL รายละเอียดสรุปแพ็กเกจคอมมิชชั่นประจำเดือน (ทั้งเจ้าของร้าน & พนักงาน + รายการโบนัสพิเศษ) -->
         <div id="commissionDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
             <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-3.5 max-h-[85vh] flex flex-col">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -335,34 +338,49 @@
                     </button>
                 </div>
 
+                <!-- Top Highlight Card -->
                 <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 p-4 rounded-2xl text-slate-950 space-y-2 shadow-md shrink-0 relative overflow-hidden border border-amber-300">
                     <div class="absolute -right-2 -top-2 opacity-20 text-3xl">🎉</div>
                     <div class="flex justify-between items-center relative z-10">
                         <div>
-                            <span class="text-[11px] font-bold text-slate-900 block">💰 ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
-                            <span class="text-2xl font-black" id="modalCommTotalAmt">฿0.00</span>
+                            <span class="text-[11px] font-bold text-slate-950 block">💰 ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
+                            <span class="text-2xl font-black text-slate-950" id="modalCommTotalAmt">฿0.00</span>
                         </div>
-                        <span class="text-xs font-black bg-slate-950/90 text-amber-300 px-3 py-1.5 rounded-xl shadow-sm" id="modalCommTotalQueues">0 คิว</span>
+                        <span class="text-xs font-black bg-slate-950 text-amber-400 px-3 py-1.5 rounded-xl shadow-sm" id="modalCommTotalQueues">0 คิว</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-950/20 text-[11px] relative z-10">
-                        <div class="bg-slate-950/10 p-2 rounded-xl flex justify-between items-center">
-                            <span class="text-slate-900 font-semibold">คอมฯ แพ็กเกจ:</span>
-                            <strong class="text-slate-950 font-black" id="modalBaseCommTotal">฿0.00</strong>
+                        <div class="bg-amber-600/20 p-2 rounded-xl flex justify-between items-center border border-amber-700/30">
+                            <span class="text-slate-950 font-bold">คอมฯ แพ็กเกจ:</span>
+                            <strong class="text-slate-950 font-black text-xs" id="modalBaseCommTotal">฿0.00</strong>
                         </div>
-                        <div class="bg-slate-950/10 p-2 rounded-xl flex justify-between items-center">
-                            <span class="text-slate-900 font-semibold">โบนัสพิเศษ:</span>
-                            <strong class="text-slate-950 font-black" id="modalBonusCommTotal">+฿0.00</strong>
+                        <div class="bg-amber-600/20 p-2 rounded-xl flex justify-between items-center border border-amber-700/30">
+                            <span class="text-slate-950 font-bold">โบนัสพิเศษ:</span>
+                            <strong class="text-slate-950 font-black text-xs" id="modalBonusCommTotal">+฿0.00</strong>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto space-y-2 pr-1">
-                    <span class="text-[11px] font-bold text-slate-700 block flex items-center gap-1 sticky top-0 bg-white py-1">
-                        <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-500"></i>
-                        <span>สรุปแพ็กเกจที่คุณทำได้เดือนนี้ (คิว):</span>
-                    </span>
-                    <div id="modalPackageBreakdownList" class="space-y-2 text-xs"></div>
+                <div class="flex-1 overflow-y-auto space-y-3 pr-1">
+                    <!-- SECTION 1: รายการโบนัสคอมมิชชั่นพิเศษว่ามาจากคิวงานไหน -->
+                    <div class="space-y-1.5">
+                        <span class="text-[11px] font-bold text-amber-900 block flex items-center gap-1 sticky top-0 bg-white py-1">
+                            <i data-lucide="gift" class="w-3.5 h-3.5 text-amber-600"></i>
+                            <span>รายการโบนัสพิเศษจากเจ้าของร้าน (แยกตามคิวงาน):</span>
+                        </span>
+                        <div id="modalBonusBreakdownList" class="space-y-1.5 text-xs"></div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <!-- SECTION 2: สรุปคิวแยกตามแพ็กเกจ -->
+                    <div class="space-y-1.5">
+                        <span class="text-[11px] font-bold text-slate-700 block flex items-center gap-1 sticky top-0 bg-white py-1">
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-500"></i>
+                            <span>สรุปแพ็กเกจที่คุณทำได้เดือนนี้ (คิว):</span>
+                        </span>
+                        <div id="modalPackageBreakdownList" class="space-y-2 text-xs"></div>
+                    </div>
                 </div>
 
                 <div class="pt-2 border-t border-slate-100">
@@ -807,6 +825,7 @@
         let currentTab = "studio";
         let isStaffMode = false;
         let isLockedByUrl = false;
+        let isCommCollapsed = false;
         let currentYear = new Date().getFullYear();
         let currentMonth = new Date().getMonth();
         let selectedDateStr = new Date().toISOString().split('T')[0];
@@ -870,6 +889,24 @@
             const parts = String(dateStr).split('T')[0].split('-');
             if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
             return dateStr;
+        }
+
+        function toggleCommissionCollapse() {
+            isCommCollapsed = !isCommCollapsed;
+            const content = document.getElementById("commCollapsibleContent");
+            const lbl = document.getElementById("lblCollapseComm");
+            const icon = document.getElementById("iconCollapseComm");
+
+            if (isCommCollapsed) {
+                content.classList.add("hidden");
+                lbl.innerText = "ขยายออก";
+                icon.setAttribute("data-lucide", "chevron-down");
+            } else {
+                content.classList.remove("hidden");
+                lbl.innerText = "พับเก็บ";
+                icon.setAttribute("data-lucide", "chevron-up");
+            }
+            renderIcons();
         }
 
         function applyPackagePreset(val) {
@@ -1043,7 +1080,7 @@
                 ownerSummaryBoxes.classList.remove("hidden");
                 staffSummaryBoxes.classList.add("hidden");
 
-                summaryHeaderTitle.innerHTML = `<i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i> สรุปยอดจองประจำเดือน (<span id="monthlyLabel">${thaiMonths[currentMonth]} ${currentYear}</span>)`;
+                summaryHeaderTitle.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-amber-500"></i> สรุปยอดคอมมิชชั่นประจำเดือน (<span id="monthlyLabel">${thaiMonths[currentMonth]} ${currentYear}</span>)`;
 
                 ownerPanel.classList.remove("hidden");
                 btnSet.classList.remove("hidden");
@@ -1518,8 +1555,9 @@
             let totalQueues = 0;
 
             const pkgCounts = {};
+            const bonusItems = [];
 
-            Object.values(monthlyDataCache).forEach(d => {
+            Object.entries(monthlyDataCache).forEach(([dKey, d]) => {
                 mSales += Number(d.totalSales || 0);
                 mDeposit += Number(d.totalDeposit || 0);
 
@@ -1532,6 +1570,15 @@
 
                             mBaseCommission += bComm;
                             mBonusCommission += bonusComm;
+
+                            if (bonusComm !== 0) {
+                                bonusItems.push({
+                                    date: dKey,
+                                    time: b.time,
+                                    title: b.title,
+                                    bonusAmt: bonusComm
+                                });
+                            }
 
                             let cleanPkgName = getNormalizedPackageName(b.title);
                             if (!pkgCounts[cleanPkgName]) pkgCounts[cleanPkgName] = 0;
@@ -1548,7 +1595,7 @@
             document.getElementById("monthlyTotalDeposit").innerText = `฿${mDeposit.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("monthlyTotalCommission").innerText = `฿${mTotalCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
 
-            // อัปเดตฝั่งพนักงาน (รวม + แยกประเภทตรงวงสีเขียว)
+            // อัปเดตฝั่งพนักงาน (รวม + แยกประเภท)
             document.getElementById("staffMonthlyCommissionTotal").innerText = `฿${mTotalCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("staffMonthlyTotalQueues").innerText = `${totalQueues} คิว`;
 
@@ -1561,6 +1608,30 @@
             document.getElementById("modalBaseCommTotal").innerText = `฿${mBaseCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("modalBonusCommTotal").innerText = `${mBonusCommission >= 0 ? '+' : ''}฿${mBonusCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
 
+            // แสดงที่มารายการโบนัสพิเศษใน Modal
+            const modalBonusList = document.getElementById("modalBonusBreakdownList");
+            modalBonusList.innerHTML = "";
+
+            if (bonusItems.length > 0) {
+                bonusItems.forEach(item => {
+                    const isPositive = item.bonusAmt > 0;
+                    modalBonusList.innerHTML += `
+                        <div class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-2xl flex justify-between items-center space-x-2">
+                            <div class="space-y-0.5">
+                                <div class="font-bold text-slate-900 text-xs truncate max-w-[200px]">${item.title}</div>
+                                <div class="text-[10px] text-amber-700 font-medium">📅 ${formatDateToDDMMYYYY(item.date)} | ⏰ ${item.time} น.</div>
+                            </div>
+                            <span class="font-extrabold text-xs px-2.5 py-1 rounded-xl shrink-0 ${isPositive ? 'bg-amber-500 text-slate-950' : 'bg-rose-100 text-rose-700'}">
+                                ${isPositive ? '+' : ''}${item.bonusAmt} บาท
+                            </span>
+                        </div>
+                    `;
+                });
+            } else {
+                modalBonusList.innerHTML = `<div class="text-center text-slate-400 py-2 text-[11px]">ไม่มีรายการโบนัสพิเศษในเดือนนี้</div>`;
+            }
+
+            // แสดงรายการแพ็กเกจใน Modal
             const modalPkgList = document.getElementById("modalPackageBreakdownList");
             modalPkgList.innerHTML = "";
 
@@ -1923,7 +1994,7 @@
 
                                 <button onclick="markAsFullyPaid('${b.id}', ${b.totalPrice})" 
                                         class="py-2 px-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm active:scale-95">
-                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                                    <i data-lucide="check-circle-2" class="w-3 h-3.5"></i>
                                     <span>✅ ชำระครบแล้ว</span>
                                 </button>
                             </div>
