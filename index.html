@@ -305,9 +305,62 @@
                         </div>
                     </div>
 
+                    <!-- DROPDOWN เลือกแพ็กเกจด่วน -->
+                    <div class="bg-amber-50 p-2.5 rounded-2xl border border-amber-200 space-y-1.5">
+                        <label class="block text-amber-900 font-bold flex items-center gap-1">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-600"></i>
+                            <span>เลือกจากแพ็กเกจของร้าน (คำนวณราคาอัตโนมัติ)</span>
+                        </label>
+                        <select id="selectPresetPackage" onchange="applyPackagePreset(this.value)" class="w-full p-2 bg-white border border-amber-300 rounded-xl font-medium text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs">
+                            <option value="">-- เลือกแพ็กเกจด่วน หรือ พิมพ์เองด้านล่าง --</option>
+                            <optgroup label="📸 เซลฟี่สตูดิโอ (ครึ่งตัว) 1-2 คน">
+                                <option value="เซลฟี่สตูดิโอ ครึ่งตัว 10 นาที (1-2 คน)|199">10 นาที - 199 บาท (แถมปริ้น 1 ใบ)</option>
+                                <option value="เซลฟี่สตูดิโอ ครึ่งตัว 20 นาที (1-2 คน)|350">20 นาที - 350 บาท (แถมปริ้น 2 ใบ)</option>
+                            </optgroup>
+                            <optgroup label="📸 เซลฟี่สตูดิโอ (เต็มตัว/ครึ่งตัว) 1-2 คน">
+                                <option value="เซลฟี่สตูดิโอ เต็มตัว/ครึ่งตัว 10 นาที (1-2 คน)|249">10 นาที - 249 บาท (แถมปริ้น 1 ใบ)</option>
+                                <option value="เซลฟี่สตูดิโอ เต็มตัว/ครึ่งตัว 20 นาที (1-2 คน)|400">20 นาที - 400 บาท (แถมปริ้น 2 ใบ)</option>
+                            </optgroup>
+                            <optgroup label="📷 ถ่ายโปรไฟล์ พร้อมช่างภาพ (20 นาที)">
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (1 คน)|450">1 คน - 450 บาท (แถมปริ้น 1 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (2 คน)|550">2 คน - 550 บาท (แถมปริ้น 2 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (3 คน)|650">3 คน - 650 บาท (แถมปริ้น 3 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (4 คน)|750">4 คน - 750 บาท (แถมปริ้น 4 ใบ)</option>
+                            </optgroup>
+                            <optgroup label="📷 ถ่ายโปรไฟล์ พร้อมช่างภาพ (40 นาที)">
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (1 คน)|900">1 คน - 900 บาท (แถมปริ้น 1 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (2 คน)|1000">2 คน - 1,000 บาท (แถมปริ้น 2 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (3 คน)|1100">3 คน - 1,100 บาท (แถมปริ้น 3 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (4 คน)|1200">4 คน - 1,200 บาท (แถมปริ้น 4 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (5 คน)|1300">5 คน - 1,300 บาท (แถมปริ้น 5 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (6 คน)|1400">6 คน - 1,400 บาท (แถมปริ้น 6 ใบ)</option>
+                            </optgroup>
+                            <optgroup label="🏠 เช่าสตูดิโอ (เฉพาะสถานที่)">
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 1 ชั่วโมง|500">1 ชั่วโมง - 500 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 2 ชั่วโมง|1000">2 ชั่วโมง - 1,000 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 3 ชั่วโมง|1500">3 ชั่วโมง - 1,500 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 4 ชั่วโมง|2000">4 ชั่วโมง - 2,000 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 5 ชั่วโมง|2400">5 ชั่วโมง - 2,400 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 6 ชั่วโมง|2800">6 ชั่วโมง - 2,800 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 7 ชั่วโมง|3200">7 ชั่วโมง - 3,200 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 8 ชั่วโมง|3600">8 ชั่วโมง - 3,600 บาท</option>
+                            </optgroup>
+                            <optgroup label="📷 เช่าสตูดิโอ (พร้อมช่างภาพ)">
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 1 ชั่วโมง|1500">1 ชั่วโมง - 1,500 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 2 ชั่วโมง|3000">2 ชั่วโมง - 3,000 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 3 ชั่วโมง|3900">3 ชั่วโมง - 3,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 4 ชั่วโมง|4900">4 ชั่วโมง - 4,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 5 ชั่วโมง|5900">5 ชั่วโมง - 5,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 6 ชั่วโมง|6900">6 ชั่วโมง - 6,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 7 ชั่วโมง|7900">7 ชั่วโมง - 7,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 8 ชั่วโมง|8900">8 ชั่วโมง - 8,900 บาท</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
                     <div>
                         <label class="block text-slate-700 font-medium mb-1">แพ็กเกจ / บริการที่เลือก <span class="text-rose-500">*</span></label>
-                        <input type="text" id="addPackageName" required placeholder="เช่น เซลฟี่สตูดิโอ 10 นาที โปรเดือนตุลาคม" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <input type="text" id="addPackageName" required placeholder="เลือกจากเมนูด้านบน หรือพิมพ์ชื่อแพ็กเกจที่นี่" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
                     </div>
 
                     <div>
@@ -607,7 +660,7 @@
     </div>
 
     <script>
-        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw5l9ezDijRbDCdzDyYHBvXJOIOB-i-DDshoqFHs7yYKoJnzBHkadvFPT8CUlHHmEOZ/exec";
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzape1-YclrKo1JgrtiGiNoWnV8wfsKUdVXVIs1aj04pyXZYBexbKsF83RkT3r0a3CW/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentTab = "studio";
@@ -634,6 +687,47 @@
             const parts = String(dateStr).split('T')[0].split('-');
             if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
             return dateStr;
+        }
+
+        function applyPackagePreset(val) {
+            if (!val) return;
+            const parts = val.split('|');
+            const name = parts[0];
+            const price = Number(parts[1]) || 0;
+
+            document.getElementById("addPackageName").value = name;
+            document.getElementById("addTotalAmt").value = price;
+            document.getElementById("addDepositAmt").value = Math.round(price * 0.5);
+        }
+
+        async function markAsFullyPaid(bookingId, totalPrice) {
+            const loading = document.getElementById("loadingIndicator");
+            document.getElementById("loadingText").innerText = "กำลังอัปเดตเป็นชำระครบแล้ว...";
+            loading.classList.remove("hidden");
+
+            try {
+                const payload = {
+                    action: "updateDeposit",
+                    type: currentTab,
+                    bookingId: bookingId,
+                    depositAmount: totalPrice,
+                    slipBase64: "",
+                    slipFileName: ""
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("อัปเดตเป็นชำระครบแล้วเรียบร้อย!");
+                await initApp(true);
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการอัปเดต: " + err.message);
+            } finally {
+                loading.classList.add("hidden");
+            }
         }
 
         function getReceiptPublicUrl(bookingId) {
@@ -724,6 +818,7 @@
                 document.getElementById("addBookingDate").value = selectedDateStr;
                 document.getElementById("addCustName").value = "ลูกค้า Walk in ไม่ทราบชื่อ";
                 document.getElementById("addCustPhone").value = "ไม่มีเบอร์ติดต่อ";
+                document.getElementById("selectPresetPackage").value = "";
                 modal.classList.remove("hidden");
             } else {
                 modal.classList.add("hidden");
@@ -1435,23 +1530,29 @@
                                 </div>
                             </div>
 
-                            <div class="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
                                 <button onclick="openRescheduleModal('${b.id}', '${b.time}')" 
-                                        class="py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0 border border-indigo-200">
+                                        class="py-2 px-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 border border-indigo-200">
                                     <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-indigo-600"></i>
                                     <span>📅 เลื่อนวัน/เวลา</span>
                                 </button>
 
                                 <button onclick="toggleDepositModal(true, '${b.id}', ${b.depositPrice}, ${b.totalPrice})" 
-                                        class="flex-1 min-w-[120px] py-2 px-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
+                                        class="py-2 px-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
                                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                                     <span>กรอกมัดจำ / แนบสลิป</span>
                                 </button>
 
                                 <button onclick='toggleReceiptModal(true, ${JSON.stringify(b).replace(/'/g, "&apos;")})' 
-                                        class="py-2 px-3 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl text-[11px] transition flex items-center gap-1 shrink-0 shadow-sm">
+                                        class="py-2 px-2 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
                                     <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
                                     <span>ใบจองออนไลน์</span>
+                                </button>
+
+                                <button onclick="markAsFullyPaid('${b.id}', ${b.totalPrice})" 
+                                        class="py-2 px-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm active:scale-95">
+                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                                    <span>✅ ชำระครบแล้ว</span>
                                 </button>
                             </div>
                         </div>
@@ -1464,7 +1565,6 @@
             renderIcons();
         }
 
-        // ตรวจสอบใบจองสาธารณะ ค้นหาด้วย Booking ID จากทุกวันในระบบ
         async function checkPublicReceiptMode() {
             const urlParams = new URLSearchParams(window.location.search);
             const receiptId = urlParams.get('receipt');
@@ -1520,7 +1620,6 @@
                 document.getElementById("stRecLocationRow").classList.add("hidden");
             }
 
-            // แสดงประวัติย้ายเวลาบนใบจองออนไลน์
             if (b.desc && b.desc.includes("[ปรับเลื่อนเวลาแล้ว]")) {
                 const historyMatch = b.desc.match(/\[ปรับเลื่อนเวลาแล้ว\][\s\S]*/);
                 if (historyMatch) {
