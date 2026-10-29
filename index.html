@@ -220,8 +220,8 @@
                         <span id="valDepositCount" class="text-[9px] text-slate-400 block truncate">0 คิวมีมัดจำ</span>
                     </div>
                     <div class="border-l border-white/10 pl-3">
-                        <span class="text-slate-400 text-[10px] block">คิวที่ยังไม่มีมัดจำ</span>
-                        <span id="valNoDepositCount" class="font-bold text-amber-400 text-sm">0 คิว</span>
+                        <span class="text-slate-400 text-[10px] block">คอมมิชชั่นพนักงาน (ประจำวัน)</span>
+                        <span id="valDailyCommission" class="font-bold text-amber-400 text-sm">฿0.00</span>
                         <span id="valPendingAmount" class="text-[9px] text-slate-400 block truncate">คงเหลือ ฿0.00</span>
                     </div>
                 </div>
@@ -236,14 +236,18 @@
                     </h2>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <span class="text-slate-500 text-[10px] block">ยอดจองรวมทั้งเดือน</span>
-                        <span id="monthlyTotalSales" class="font-bold text-slate-800 text-sm">฿0.00</span>
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                        <span class="text-slate-500 text-[9px] block truncate">ยอดจองรวม</span>
+                        <span id="monthlyTotalSales" class="font-bold text-slate-800 text-xs sm:text-sm">฿0.00</span>
                     </div>
-                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <span class="text-slate-500 text-[10px] block">ยอดมัดจำรวมทั้งเดือน</span>
-                        <span id="monthlyTotalDeposit" class="font-bold text-emerald-600 text-sm">฿0.00</span>
+                    <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                        <span class="text-slate-500 text-[9px] block truncate">มัดจำรวม</span>
+                        <span id="monthlyTotalDeposit" class="font-bold text-emerald-600 text-xs sm:text-sm">฿0.00</span>
+                    </div>
+                    <div class="bg-amber-50/50 p-2 rounded-xl border border-amber-100">
+                        <span class="text-amber-800 text-[9px] font-medium block truncate">คอมมิชชั่นพนักงาน</span>
+                        <span id="monthlyTotalCommission" class="font-bold text-amber-600 text-xs sm:text-sm">฿0.00</span>
                     </div>
                 </div>
             </div>
@@ -313,21 +317,21 @@
                         </label>
                         <select id="selectPresetPackage" onchange="applyPackagePreset(this.value)" class="w-full p-2 bg-white border border-amber-300 rounded-xl font-medium text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs">
                             <option value="">-- เลือกแพ็กเกจด่วน หรือ พิมพ์เองด้านล่าง --</option>
-                            <optgroup label="📸 เซลฟี่สตูดิโอ (ครึ่งตัว) 1-2 คน">
+                            <optgroup label="📸 เซลฟี่สตูดิโอ (ครึ่งตัว) 1-2 คน [คอมมิชชั่น 10 บาท]">
                                 <option value="เซลฟี่สตูดิโอ ครึ่งตัว 10 นาที (1-2 คน)|199">10 นาที - 199 บาท (แถมปริ้น 1 ใบ)</option>
                                 <option value="เซลฟี่สตูดิโอ ครึ่งตัว 20 นาที (1-2 คน)|350">20 นาที - 350 บาท (แถมปริ้น 2 ใบ)</option>
                             </optgroup>
-                            <optgroup label="📸 เซลฟี่สตูดิโอ (เต็มตัว/ครึ่งตัว) 1-2 คน">
+                            <optgroup label="📸 เซลฟี่สตูดิโอ (เต็มตัว/ครึ่งตัว) 1-2 คน [คอมมิชชั่น 20 บาท]">
                                 <option value="เซลฟี่สตูดิโอ เต็มตัว/ครึ่งตัว 10 นาที (1-2 คน)|249">10 นาที - 249 บาท (แถมปริ้น 1 ใบ)</option>
                                 <option value="เซลฟี่สตูดิโอ เต็มตัว/ครึ่งตัว 20 นาที (1-2 คน)|400">20 นาที - 400 บาท (แถมปริ้น 2 ใบ)</option>
                             </optgroup>
-                            <optgroup label="📷 ถ่ายโปรไฟล์ พร้อมช่างภาพ (20 นาที)">
+                            <optgroup label="📷 ถ่ายโปรไฟล์ พร้อมช่างภาพ (20 นาที) [คอมมิชชั่น 20 บาท]">
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (1 คน)|450">1 คน - 450 บาท (แถมปริ้น 1 ใบ)</option>
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (2 คน)|550">2 คน - 550 บาท (แถมปริ้น 2 ใบ)</option>
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (3 คน)|650">3 คน - 650 บาท (แถมปริ้น 3 ใบ)</option>
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (4 คน)|750">4 คน - 750 บาท (แถมปริ้น 4 ใบ)</option>
                             </optgroup>
-                            <optgroup label="📷 ถ่ายโปรไฟล์ พร้อมช่างภาพ (40 นาที)">
+                            <optgroup label="📷 ถ่ายโปรไฟล์ พร้อมช่างภาพ (40 นาที) [คอมมิชชั่น 20 บาท]">
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (1 คน)|900">1 คน - 900 บาท (แถมปริ้น 1 ใบ)</option>
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (2 คน)|1000">2 คน - 1,000 บาท (แถมปริ้น 2 ใบ)</option>
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (3 คน)|1100">3 คน - 1,100 บาท (แถมปริ้น 3 ใบ)</option>
@@ -335,7 +339,7 @@
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (5 คน)|1300">5 คน - 1,300 บาท (แถมปริ้น 5 ใบ)</option>
                                 <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (6 คน)|1400">6 คน - 1,400 บาท (แถมปริ้น 6 ใบ)</option>
                             </optgroup>
-                            <optgroup label="🏠 เช่าสตูดิโอ (เฉพาะสถานที่)">
+                            <optgroup label="🏠 เช่าสตูดิโอ (เฉพาะสถานที่) [คอมมิชชั่น 20 บาท]">
                                 <option value="เช่าสตูดิโอ เฉพาะสถานที่ 1 ชั่วโมง|500">1 ชั่วโมง - 500 บาท</option>
                                 <option value="เช่าสตูดิโอ เฉพาะสถานที่ 2 ชั่วโมง|1000">2 ชั่วโมง - 1,000 บาท</option>
                                 <option value="เช่าสตูดิโอ เฉพาะสถานที่ 3 ชั่วโมง|1500">3 ชั่วโมง - 1,500 บาท</option>
@@ -345,7 +349,7 @@
                                 <option value="เช่าสตูดิโอ เฉพาะสถานที่ 7 ชั่วโมง|3200">7 ชั่วโมง - 3,200 บาท</option>
                                 <option value="เช่าสตูดิโอ เฉพาะสถานที่ 8 ชั่วโมง|3600">8 ชั่วโมง - 3,600 บาท</option>
                             </optgroup>
-                            <optgroup label="📷 เช่าสตูดิโอ (พร้อมช่างภาพ)">
+                            <optgroup label="📷 เช่าสตูดิโอ (พร้อมช่างภาพ) [คอมมิชชั่น 20 บาท]">
                                 <option value="เช่าสตูดิโอ พร้อมช่างภาพ 1 ชั่วโมง|1500">1 ชั่วโมง - 1,500 บาท</option>
                                 <option value="เช่าสตูดิโอ พร้อมช่างภาพ 2 ชั่วโมง|3000">2 ชั่วโมง - 3,000 บาท</option>
                                 <option value="เช่าสตูดิโอ พร้อมช่างภาพ 3 ชั่วโมง|3900">3 ชั่วโมง - 3,900 บาท</option>
@@ -368,14 +372,18 @@
                         <input type="text" id="addLocation" placeholder="เช่น ชำระเงินสดหน้าร้าน / ลูกค้าขอไฟล์เพิ่ม" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-3 gap-2">
                         <div>
-                            <label class="block text-slate-700 font-medium mb-1">ยอดบริการรวม (บาท)</label>
-                            <input type="number" id="addTotalAmt" placeholder="เช่น 150" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold">
+                            <label class="block text-slate-700 font-medium mb-1">ราคาปกติ (บาท)</label>
+                            <input type="number" id="addTotalAmt" oninput="calculateNetTotal()" placeholder="เช่น 199" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold">
                         </div>
                         <div>
-                            <label class="block text-slate-700 font-medium mb-1">มัดจำชำระแล้ว (บาท)</label>
-                            <input type="number" id="addDepositAmt" placeholder="เช่น 75" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-emerald-600">
+                            <label class="block text-rose-600 font-medium mb-1">ส่วนลด (บาท)</label>
+                            <input type="number" id="addDiscountAmt" oninput="calculateNetTotal()" placeholder="เช่น 20" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none font-bold text-rose-600">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">มัดจำแล้ว (บาท)</label>
+                            <input type="number" id="addDepositAmt" placeholder="เช่น 100" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-emerald-600">
                         </div>
                     </div>
 
@@ -660,7 +668,7 @@
     </div>
 
     <script>
-        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzape1-YclrKo1JgrtiGiNoWnV8wfsKUdVXVIs1aj04pyXZYBexbKsF83RkT3r0a3CW/exec";
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxKToeJoQAwpS7otcbl_usoXOkxWei_QioyasoRqBLSjkByiYDZjlP41iHNEKD0Jfk/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentTab = "studio";
@@ -677,6 +685,19 @@
         let pendingDeleteId = null;
 
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+        // การตั้งค่าการคำนวณค่าคอมมิชชั่นพนักงาน (ปรับเปลี่ยนค่าได้ง่ายในอนาคต)
+        function getCommissionAmount(title) {
+            if (!title) return 20;
+            const cleanTitle = title.toString().trim();
+            
+            // กลุ่มเซลฟี่สตูดิโอ (ครึ่งตัว) ได้ 10 บาทต่อคิว
+            if (cleanTitle.includes("เซลฟี่สตูดิโอ ครึ่งตัว") || cleanTitle.includes("ครึ่งตัว 10 นาที") || cleanTitle.includes("ครึ่งตัว 20 นาที")) {
+                return 10;
+            }
+            // แพ็กเกจอื่นๆ ทั้งหมด ได้ 20 บาทต่อคิว
+            return 20;
+        }
 
         function renderIcons() {
             if (window.lucide) lucide.createIcons();
@@ -697,7 +718,15 @@
 
             document.getElementById("addPackageName").value = name;
             document.getElementById("addTotalAmt").value = price;
+            document.getElementById("addDiscountAmt").value = '';
             document.getElementById("addDepositAmt").value = Math.round(price * 0.5);
+        }
+
+        function calculateNetTotal() {
+            const rawPrice = Number(document.getElementById("addTotalAmt").value) || 0;
+            const discount = Number(document.getElementById("addDiscountAmt").value) || 0;
+            const netPrice = Math.max(0, rawPrice - discount);
+            document.getElementById("addDepositAmt").value = Math.round(netPrice * 0.5);
         }
 
         async function markAsFullyPaid(bookingId, totalPrice) {
@@ -818,6 +847,7 @@
                 document.getElementById("addBookingDate").value = selectedDateStr;
                 document.getElementById("addCustName").value = "ลูกค้า Walk in ไม่ทราบชื่อ";
                 document.getElementById("addCustPhone").value = "ไม่มีเบอร์ติดต่อ";
+                document.getElementById("addDiscountAmt").value = "";
                 document.getElementById("selectPresetPackage").value = "";
                 modal.classList.remove("hidden");
             } else {
@@ -1026,6 +1056,10 @@
             btn.disabled = true;
             btn.innerHTML = `<div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-slate-900"></div> <span>กำลังบันทึกลงปฏิทิน...</span>`;
 
+            const rawPrice = Number(document.getElementById("addTotalAmt").value) || 0;
+            const discount = Number(document.getElementById("addDiscountAmt").value) || 0;
+            const netPrice = Math.max(0, rawPrice - discount);
+
             const payload = {
                 action: "addBooking",
                 type: currentTab,
@@ -1035,7 +1069,8 @@
                 time: document.getElementById("addBookingTime").value.trim(),
                 packageName: document.getElementById("addPackageName").value.trim(),
                 location: document.getElementById("addLocation").value.trim(),
-                totalPrice: document.getElementById("addTotalAmt").value || 0,
+                totalPrice: netPrice,
+                discountAmount: discount,
                 depositPrice: document.getElementById("addDepositAmt").value || 0
             };
 
@@ -1249,13 +1284,22 @@
         function calculateMonthlyTotals() {
             let mSales = 0;
             let mDeposit = 0;
+            let mCommission = 0;
+
             Object.values(monthlyDataCache).forEach(d => {
                 mSales += Number(d.totalSales || 0);
                 mDeposit += Number(d.totalDeposit || 0);
+
+                if (d.bookings && Array.isArray(d.bookings)) {
+                    d.bookings.forEach(b => {
+                        mCommission += getCommissionAmount(b.title);
+                    });
+                }
             });
 
             document.getElementById("monthlyTotalSales").innerText = `฿${mSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("monthlyTotalDeposit").innerText = `฿${mDeposit.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("monthlyTotalCommission").innerText = `฿${mCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
         }
 
         function changeMonth(delta) {
@@ -1450,9 +1494,14 @@
             document.getElementById("valTotalDeposit").innerText = `฿${Number(data.totalDeposit || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("valDepositCount").innerText = `${depositCount} คิวโอนมัดจำแล้ว`;
 
+            let dailyCommTotal = 0;
+            (data.bookings || []).forEach(b => {
+                dailyCommTotal += getCommissionAmount(b.title);
+            });
+            document.getElementById("valDailyCommission").innerText = `฿${dailyCommTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
             const pendingAmt = (data.totalSales || 0) - (data.totalDeposit || 0);
-            document.getElementById("valNoDepositCount").innerText = `${data.noDepositCount || 0} คิว`;
-            document.getElementById("valPendingAmount").innerText = `คงเหลือเก็บหน้างาน ฿${pendingAmt.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("valPendingAmount").innerText = `คงเหลือ ฿${pendingAmt.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
 
             const container = document.getElementById("bookingListContainer");
             container.innerHTML = "";
@@ -1464,6 +1513,12 @@
                     const isDeposit = Number(b.depositPrice) > 0;
                     const isRescheduled = b.desc.includes("[ปรับเลื่อนเวลาแล้ว]");
                     const formattedDesc = formatBookingDescription(b.title, b.desc, b.location);
+
+                    const commAmt = getCommissionAmount(b.title);
+
+                    const discMatch = b.desc.match(/ส่วนลด\s*[:=]?\s*([0-9,.]+)/i);
+                    const discountAmt = discMatch ? parseFloat(discMatch[1].replace(/,/g, '')) : 0;
+                    const originalPrice = b.totalPrice + discountAmt;
 
                     let statusBadge = '';
                     if (isFullyPaid) {
@@ -1510,7 +1565,12 @@
                                 </div>
                             </div>
 
-                            <div class="font-bold text-slate-900 text-sm">${b.title}</div>
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="font-bold text-slate-900 text-sm">${b.title}</div>
+                                <span class="bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded-lg shrink-0">
+                                    🎁 คอมฯ ${commAmt} บาท
+                                </span>
+                            </div>
 
                             ${formattedDesc}
                             ${historyHtml}
@@ -1518,7 +1578,10 @@
                             <div class="space-y-1 pt-1 border-t border-slate-100">
                                 <div class="flex justify-between items-center text-slate-600">
                                     <span>ยอดรวมงานทั้งหมด:</span>
-                                    <strong class="text-slate-900 text-sm">฿${Number(b.totalPrice).toLocaleString()}</strong>
+                                    <div class="text-right">
+                                        ${discountAmt > 0 ? `<span class="line-through text-slate-400 text-[11px] mr-1.5">฿${originalPrice.toLocaleString()}</span><span class="text-rose-600 font-bold text-[10px] mr-1">(ส่วนลด ฿${discountAmt.toLocaleString()})</span>` : ''}
+                                        <strong class="text-slate-900 text-sm">฿${Number(b.totalPrice).toLocaleString()}</strong>
+                                    </div>
                                 </div>
                                 <div class="flex justify-between items-center text-slate-500 text-[11px]">
                                     <span>ชำระแล้ว:</span>
