@@ -202,7 +202,7 @@
                 </div>
             </div>
 
-            <!-- HERO DASHBOARD CARD -->
+            <!-- HERO DASHBOARD CARD (OWNER VIEW) -->
             <div id="ownerDashboardCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
                 <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
                 
@@ -227,16 +227,17 @@
                 </div>
             </div>
 
-            <!-- QUICK AUDIT SUMMARY CARD -->
-            <div id="ownerMonthlySummaryCard" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+            <!-- QUICK AUDIT SUMMARY CARD (DYNAMIC FOR OWNER / STAFF) -->
+            <div id="summaryCardContainer" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                    <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                    <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5" id="summaryCardHeaderTitle">
                         <i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i>
                         สรุปยอดจองประจำเดือน (<span id="monthlyLabel">-</span>)
                     </h2>
                 </div>
                 
-                <div class="grid grid-cols-3 gap-2 text-xs">
+                <!-- OWNER VIEW BOXES -->
+                <div id="ownerSummaryBoxes" class="grid grid-cols-3 gap-2 text-xs">
                     <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
                         <span class="text-slate-500 text-[9px] block truncate">ยอดจองรวม</span>
                         <span id="monthlyTotalSales" class="font-bold text-slate-800 text-xs sm:text-sm">฿0.00</span>
@@ -248,6 +249,27 @@
                     <div class="bg-amber-50/50 p-2 rounded-xl border border-amber-100">
                         <span class="text-amber-800 text-[9px] font-medium block truncate">คอมมิชชั่นพนักงาน</span>
                         <span id="monthlyTotalCommission" class="font-bold text-amber-600 text-xs sm:text-sm">฿0.00</span>
+                    </div>
+                </div>
+
+                <!-- STAFF VIEW BOXES & PACKAGE BREAKDOWN -->
+                <div id="staffSummaryBoxes" class="hidden space-y-3">
+                    <div class="bg-gradient-to-r from-amber-500 to-amber-600 p-4 rounded-2xl text-slate-950 flex justify-between items-center shadow-md">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-900 block">💰 ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
+                            <span class="text-2xl font-extrabold" id="staffMonthlyCommissionTotal">฿0.00</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] font-bold bg-slate-950/20 px-2.5 py-1 rounded-full text-slate-900" id="staffMonthlyTotalQueues">0 คิว</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <span class="text-[11px] font-bold text-slate-700 block flex items-center gap-1">
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-500"></i>
+                            สรุปแพ็กเกจที่คุณทำได้เดือนนี้ (คิว):
+                        </span>
+                        <div id="staffPackageBreakdownList" class="grid grid-cols-1 gap-1.5 text-xs"></div>
                     </div>
                 </div>
             </div>
@@ -396,6 +418,40 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- MODAL เพิ่ม/ลด คอมมิชชั่นพิเศษ โดยเจ้าของร้าน -->
+        <div id="bonusCommissionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="gift" class="w-4 h-4 text-amber-500"></i>
+                        ปรับเพิ่ม/ลด คอมมิชชั่นพิเศษ
+                    </h3>
+                    <button onclick="toggleBonusCommissionModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <input type="hidden" id="bonusBookingId">
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">จำนวนคอมมิชชั่นพิเศษ Bonus (บาท):</label>
+                        <input type="number" id="inputBonusAmount" placeholder="เช่น 50 หรือ -20" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-amber-600">
+                        <p class="text-[10px] text-slate-400 mt-1">*ใส่ตัวเลขบวกเพื่อเพิ่มเป็นโบนัส หรือใส่ติดลบ (-) หากต้องการปรับลด</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="submitBonusCommission()" id="btnSaveBonusComm" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-xs transition">
+                        บันทึกคอมมิชชั่นพิเศษ
+                    </button>
+                    <button onclick="toggleBonusCommissionModal(false)" class="py-2.5 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                        ยกเลิก
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -668,7 +724,7 @@
     </div>
 
     <script>
-        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxKToeJoQAwpS7otcbl_usoXOkxWei_QioyasoRqBLSjkByiYDZjlP41iHNEKD0Jfk/exec";
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGQ9iLaOcRKunCZBUOc0-szn2NYana6NuM7F2oCUxPc4Z_qKroyQ3NoME1wIhStjJs/exec";
         let SCRIPT_URL = DEFAULT_SCRIPT_URL;
 
         let currentTab = "studio";
@@ -686,17 +742,33 @@
 
         const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
 
-        // การตั้งค่าการคำนวณค่าคอมมิชชั่นพนักงาน (ปรับเปลี่ยนค่าได้ง่ายในอนาคต)
-        function getCommissionAmount(title) {
+        // การตั้งค่าการคำนวณค่าคอมมิชชั่นพนักงาน
+        function getCommissionAmount(title, desc = "") {
             if (!title) return 20;
             const cleanTitle = title.toString().trim();
             
+            let baseComm = 20;
             // กลุ่มเซลฟี่สตูดิโอ (ครึ่งตัว) ได้ 10 บาทต่อคิว
             if (cleanTitle.includes("เซลฟี่สตูดิโอ ครึ่งตัว") || cleanTitle.includes("ครึ่งตัว 10 นาที") || cleanTitle.includes("ครึ่งตัว 20 นาที")) {
-                return 10;
+                baseComm = 10;
             }
-            // แพ็กเกจอื่นๆ ทั้งหมด ได้ 20 บาทต่อคิว
-            return 20;
+
+            // คำนวณ Bonus พิเศษที่เจ้าของร้านเพิ่ม/ลดให้
+            let bonusComm = 0;
+            if (desc) {
+                const bonusMatch = desc.match(/คอมฯ พิเศษ\s*[:=]?\s*([0-9,-.]+)/i);
+                if (bonusMatch) {
+                    bonusComm = parseFloat(bonusMatch[1].replace(/,/g, '')) || 0;
+                }
+            }
+
+            return baseComm + bonusComm;
+        }
+
+        function getBonusCommissionOnly(desc = "") {
+            if (!desc) return 0;
+            const bonusMatch = desc.match(/คอมฯ พิเศษ\s*[:=]?\s*([0-9,-.]+)/i);
+            return bonusMatch ? (parseFloat(bonusMatch[1].replace(/,/g, '')) || 0) : 0;
         }
 
         function renderIcons() {
@@ -727,6 +799,52 @@
             const discount = Number(document.getElementById("addDiscountAmt").value) || 0;
             const netPrice = Math.max(0, rawPrice - discount);
             document.getElementById("addDepositAmt").value = Math.round(netPrice * 0.5);
+        }
+
+        function openBonusCommissionModal(bookingId, currentBonus) {
+            document.getElementById("bonusBookingId").value = bookingId;
+            document.getElementById("inputBonusAmount").value = currentBonus || '';
+            toggleBonusCommissionModal(true);
+        }
+
+        function toggleBonusCommissionModal(show) {
+            const modal = document.getElementById("bonusCommissionModal");
+            if (show) modal.classList.remove("hidden");
+            else modal.classList.add("hidden");
+        }
+
+        async function submitBonusCommission() {
+            const bookingId = document.getElementById("bonusBookingId").value;
+            const bonusAmount = document.getElementById("inputBonusAmount").value;
+
+            const btn = document.getElementById("btnSaveBonusComm");
+            btn.disabled = true;
+            btn.innerText = "กำลังบันทึก...";
+
+            try {
+                const payload = {
+                    action: "updateBonusCommission",
+                    type: currentTab,
+                    bookingId: bookingId,
+                    bonusAmount: bonusAmount
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("อัปเดตคอมมิชชั่นพิเศษเรียบร้อยแล้ว!");
+                toggleBonusCommissionModal(false);
+                await initApp(true);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "บันทึกคอมมิชชั่นพิเศษ";
+            }
         }
 
         async function markAsFullyPaid(bookingId, totalPrice) {
@@ -792,7 +910,9 @@
 
         function applyStaffModeUI() {
             const ownerDash = document.getElementById("ownerDashboardCard");
-            const ownerMonth = document.getElementById("ownerMonthlySummaryCard");
+            const ownerSummaryBoxes = document.getElementById("ownerSummaryBoxes");
+            const staffSummaryBoxes = document.getElementById("staffSummaryBoxes");
+            const summaryHeaderTitle = document.getElementById("summaryCardHeaderTitle");
             const ownerPanel = document.getElementById("ownerShareStaffPanel");
             const btnSet = document.getElementById("btnSettings");
             const badgeStaff = document.getElementById("badgeStaffMode");
@@ -803,7 +923,11 @@
 
             if (isStaffMode) {
                 ownerDash.classList.add("hidden");
-                ownerMonth.classList.add("hidden");
+                ownerSummaryBoxes.classList.add("hidden");
+                staffSummaryBoxes.classList.remove("hidden");
+                
+                summaryHeaderTitle.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-amber-500"></i> สรุปยอดคอมมิชชั่นประจำเดือน (<span id="monthlyLabel">${thaiMonths[currentMonth]} ${currentYear}</span>)`;
+
                 ownerPanel.classList.add("hidden");
                 btnSet.classList.add("hidden");
                 badgeStaff.classList.remove("hidden");
@@ -816,7 +940,11 @@
                 pbBtn.innerHTML = `<i data-lucide="lock" class="w-5 h-5 text-slate-400"></i><span class="text-[10px]">PhotoBooth (ล็อค)</span>`;
             } else {
                 ownerDash.classList.remove("hidden");
-                ownerMonth.classList.remove("hidden");
+                ownerSummaryBoxes.classList.remove("hidden");
+                staffSummaryBoxes.classList.add("hidden");
+
+                summaryHeaderTitle.innerHTML = `<i data-lucide="pie-chart" class="w-4 h-4 text-amber-500"></i> สรุปยอดจองประจำเดือน (<span id="monthlyLabel">${thaiMonths[currentMonth]} ${currentYear}</span>)`;
+
                 ownerPanel.classList.remove("hidden");
                 btnSet.classList.remove("hidden");
                 badgeStaff.classList.add("hidden");
@@ -829,6 +957,7 @@
                 pbBtn.innerHTML = `<i data-lucide="sparkles" class="w-5 h-5"></i><span class="text-[10px] font-medium">PhotoBooth</span>`;
             }
             renderIcons();
+            calculateMonthlyTotals();
         }
 
         function switchTab(type) {
@@ -1285,6 +1414,9 @@
             let mSales = 0;
             let mDeposit = 0;
             let mCommission = 0;
+            let totalQueues = 0;
+
+            const pkgCounts = {};
 
             Object.values(monthlyDataCache).forEach(d => {
                 mSales += Number(d.totalSales || 0);
@@ -1292,14 +1424,41 @@
 
                 if (d.bookings && Array.isArray(d.bookings)) {
                     d.bookings.forEach(b => {
-                        mCommission += getCommissionAmount(b.title);
+                        totalQueues++;
+                        mCommission += getCommissionAmount(b.title, b.desc);
+
+                        // สรุปจำนวนคิวแยกตามชื่อแพ็กเกจ
+                        let cleanPkgName = b.title.split('-')[0].trim();
+                        if (!pkgCounts[cleanPkgName]) pkgCounts[cleanPkgName] = 0;
+                        pkgCounts[cleanPkgName]++;
                     });
                 }
             });
 
+            // อัปเดตฝั่งเจ้าของร้าน
             document.getElementById("monthlyTotalSales").innerText = `฿${mSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("monthlyTotalDeposit").innerText = `฿${mDeposit.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
             document.getElementById("monthlyTotalCommission").innerText = `฿${mCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            // อัปเดตฝั่งพนักงาน
+            document.getElementById("staffMonthlyCommissionTotal").innerText = `฿${mCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("staffMonthlyTotalQueues").innerText = `${totalQueues} คิว`;
+
+            const staffList = document.getElementById("staffPackageBreakdownList");
+            staffList.innerHTML = "";
+
+            if (Object.keys(pkgCounts).length > 0) {
+                Object.keys(pkgCounts).forEach(pkg => {
+                    staffList.innerHTML += `
+                        <div class="bg-slate-50 border border-slate-200 p-2 rounded-xl flex justify-between items-center">
+                            <span class="text-slate-800 font-medium truncate">${pkg}</span>
+                            <span class="font-extrabold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-lg text-[11px]">${pkgCounts[pkg]} คิว</span>
+                        </div>
+                    `;
+                });
+            } else {
+                staffList.innerHTML = `<div class="text-center text-slate-400 py-2">ไม่มีคิวงานในเดือนนี้</div>`;
+            }
         }
 
         function changeMonth(delta) {
@@ -1496,7 +1655,7 @@
 
             let dailyCommTotal = 0;
             (data.bookings || []).forEach(b => {
-                dailyCommTotal += getCommissionAmount(b.title);
+                dailyCommTotal += getCommissionAmount(b.title, b.desc);
             });
             document.getElementById("valDailyCommission").innerText = `฿${dailyCommTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
 
@@ -1514,7 +1673,8 @@
                     const isRescheduled = b.desc.includes("[ปรับเลื่อนเวลาแล้ว]");
                     const formattedDesc = formatBookingDescription(b.title, b.desc, b.location);
 
-                    const commAmt = getCommissionAmount(b.title);
+                    const commAmt = getCommissionAmount(b.title, b.desc);
+                    const bonusOnly = getBonusCommissionOnly(b.desc);
 
                     const discMatch = b.desc.match(/ส่วนลด\s*[:=]?\s*([0-9,.]+)/i);
                     const discountAmt = discMatch ? parseFloat(discMatch[1].replace(/,/g, '')) : 0;
@@ -1546,6 +1706,29 @@
                         }
                     }
 
+                    // กล่องแจ้งเตือนคอมมิชชั่นพิเศษสำหรับพนักงาน
+                    let bonusBadgeStaffHtml = "";
+                    if (bonusOnly !== 0) {
+                        if (bonusOnly > 0) {
+                            bonusBadgeStaffHtml = `
+                                <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 p-2.5 rounded-xl font-bold text-xs flex items-center justify-between shadow-md">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-base">🎉</span>
+                                        <span>โบนัสพิเศษจากเจ้าของร้าน!</span>
+                                    </div>
+                                    <span class="bg-slate-950 text-amber-400 px-2.5 py-0.5 rounded-lg text-[11px]">+${bonusOnly} บาท</span>
+                                </div>
+                            `;
+                        } else {
+                            bonusBadgeStaffHtml = `
+                                <div class="bg-rose-50 border border-rose-200 text-rose-800 p-2 rounded-xl text-[10px] font-semibold flex items-center justify-between">
+                                    <span>ปรับลดคอมมิชชั่นพิเศษ:</span>
+                                    <span class="font-bold text-rose-600">${bonusOnly} บาท</span>
+                                </div>
+                            `;
+                        }
+                    }
+
                     container.innerHTML += `
                         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs relative overflow-hidden">
                             ${isRescheduled ? `<div class="bg-indigo-600 text-white text-[9px] font-bold px-3 py-0.5 rounded-br-xl absolute top-0 left-0 flex items-center gap-1 shadow-sm"><i data-lucide="rotate-cw" class="w-3 h-3"></i> ปรับเลื่อนเวลาแล้ว</div>` : ''}
@@ -1572,6 +1755,7 @@
                                 </span>
                             </div>
 
+                            ${bonusBadgeStaffHtml}
                             ${formattedDesc}
                             ${historyHtml}
 
@@ -1594,6 +1778,14 @@
                             </div>
 
                             <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                                ${!isStaffMode ? `
+                                <button onclick="openBonusCommissionModal('${b.id}', ${bonusOnly})" 
+                                        class="col-span-2 py-2 px-2 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 border border-amber-200">
+                                    <i data-lucide="gift" class="w-3.5 h-3.5 text-amber-600"></i>
+                                    <span>🎁 +เพิ่ม/ลด คอมฯ พิเศษ (เจ้าของร้าน)</span>
+                                </button>
+                                ` : ''}
+
                                 <button onclick="openRescheduleModal('${b.id}', '${b.time}')" 
                                         class="py-2 px-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 border border-indigo-200">
                                     <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-indigo-600"></i>
