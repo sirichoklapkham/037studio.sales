@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>037Studio & PhotoBooth System</title>
+
+    <!-- App Icon & Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
+    <link rel="shortcut icon" href="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL">
+    
+    <!-- iOS Web App Configurations -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="037Studio">
+
+    <!-- Tailwind CSS & Lucide Icons -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap');
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* TAB NAVIGATION ANIMATIONS */
+        .tab-indicator {
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tab-item {
+            transition: all 0.25s ease-out;
+        }
+        .tab-item.active {
+            transform: translateY(-2px);
+        }
+        .tab-item.active i {
+            transform: scale(1.15);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 pb-24 min-h-screen">
+
+    <!-- STANDALONE PUBLIC RECEIPT VIEW -->
+    <div id="standaloneReceipt" class="hidden min-h-screen flex items-center justify-center p-4 bg-slate-100">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-xl space-y-4 border border-slate-200" id="standaloneReceiptCard">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" class="w-10 h-10 rounded-full object-cover border border-amber-500/30">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-base leading-tight">037Studio</h3>
+                        <p class="text-[10px] text-amber-600 font-semibold">ใบสรุปยืนยันการจองออนไลน์</p>
+                    </div>
+                </div>
+                <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono" id="stRecBookingNo">#BOOKING</span>
+            </div>
+
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 text-white p-4 rounded-2xl text-center space-y-1 shadow-md">
+                <span class="text-[10px] text-amber-300 font-medium block">⏰ เวลาเข้าใช้บริการ / นัดหมาย</span>
+                <div class="text-2xl font-extrabold text-amber-400 tracking-tight" id="stRecTime">00:00 - 00:00 น.</div>
+                <div class="text-xs font-bold text-slate-200" id="stRecDate">DD-MM-YYYY</div>
+            </div>
+
+            <div class="space-y-2 text-xs">
+                <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                    <span class="text-slate-400 text-[11px]">ชื่อลูกค้า:</span>
+                    <strong class="text-slate-800" id="stRecCustName">-</strong>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                    <span class="text-slate-400 text-[11px]">เบอร์โทรศัพท์:</span>
+                    <strong class="text-slate-800 font-mono" id="stRecCustPhone">-</strong>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                    <span class="text-slate-400 text-[11px]">แพ็กเกจ/บริการ:</span>
+                    <strong class="text-slate-800 text-right max-w-[200px]" id="stRecPackage">-</strong>
+                </div>
+                <div class="flex justify-between border-b border-slate-50 pb-1.5" id="stRecLocationRow">
+                    <span class="text-slate-400 text-[11px]">โน้ต/คำอธิบาย:</span>
+                    <strong class="text-slate-800 text-right max-w-[200px]" id="stRecLocation">-</strong>
+                </div>
+            </div>
+
+            <div id="stRecHistoryRow" class="hidden bg-indigo-50 border border-indigo-200 text-indigo-900 p-3 rounded-2xl text-xs space-y-0.5">
+                <div class="font-bold flex items-center gap-1 text-indigo-700">
+                    <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                    <span>ประวัติการปรับเลื่อนวัน/เวลา:</span>
+                </div>
+                <div id="stRecHistoryText" class="text-[11px] font-mono text-indigo-800 whitespace-pre-line pl-4"></div>
+            </div>
+
+            <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
+                <div class="flex justify-between text-slate-600">
+                    <span>ยอดบริการรวมทั้งหมด:</span>
+                    <strong class="text-slate-900 text-sm" id="stRecTotalAmt">฿0.00</strong>
+                </div>
+                <div class="flex justify-between text-emerald-600 font-medium">
+                    <span>ชำระมัดจำแล้ว:</span>
+                    <strong id="stRecDepositAmt" class="text-sm">฿0.00</strong>
+                </div>
+                <div class="flex justify-between text-amber-700 font-bold border-t border-slate-200 pt-2 text-base">
+                    <span>คงเหลือชำระหน้างาน:</span>
+                    <span id="stRecBalanceAmt">฿0.00</span>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-2.5 text-center text-xs font-semibold space-y-0.5">
+                <div class="flex items-center justify-center gap-1">
+                    <i data-lucide="camera" class="w-4 h-4 text-amber-600"></i>
+                    <span>แคปหน้าจอเพื่อยื่นให้พนักงานที่ร้าน</span>
+                </div>
+                <p class="text-[10px] text-slate-500 font-normal">*กรุณามาถึงก่อนเวลาประมาณ 10-15 นาที ขอบพระคุณที่ใช้บริการ 037Studio ครับ</p>
+            </div>
+
+            <div class="pt-1">
+                <button onclick="shareStandaloneReceipt()" class="w-full py-3 bg-slate-900 text-amber-400 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2 shadow-md">
+                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                    <span>📲 แชร์ใบจองให้เพื่อน</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="mainAdminApp">
+        <!-- Top App Bar -->
+        <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+            <div class="max-w-md mx-auto px-4 h-16 flex justify-between items-center">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-full overflow-hidden border border-amber-500/50 bg-slate-800 flex items-center justify-center shrink-0 shadow-inner">
+                        <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" 
+                             alt="037Studio Logo" 
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<i data-lucide=\'camera\' class=\'w-5 h-5 text-amber-500\'></i>'; renderIcons();">
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="font-bold text-base leading-tight" id="appHeaderTitle">037Studio</h1>
+                            <span id="badgeStaffMode" class="hidden bg-amber-500 text-slate-950 text-[9px] font-extrabold px-1.5 py-0.2 rounded">โหมดพนักงาน</span>
+                        </div>
+                        <p class="text-[10px] text-amber-400 font-medium" id="appHeaderSub">ระบบตรวจเช็คยอดจอง & ยอดมัดจำ</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="toggleTrashModal(true)" class="p-2 rounded-xl bg-slate-800 text-amber-400 hover:bg-slate-700 transition border border-slate-700 relative" title="ถังขยะคิวจอง">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                    <button id="btnSettings" onclick="toggleSettingsModal(true)" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-amber-400 transition border border-slate-700">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="syncCalendar()" id="btnSync" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-400 border border-amber-500/30 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-semibold">
+                        <i data-lucide="refresh-cw" class="w-4 h-4" id="iconSync"></i>
+                        <span class="hidden sm:inline">ดึงข้อมูล</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Container -->
+        <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+
+            <!-- OWNER CONTROL PANEL -->
+            <div id="ownerShareStaffPanel" class="bg-amber-50 border border-amber-200 rounded-2xl p-3 flex justify-between items-center text-xs text-amber-900 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="user-check" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                    <span><strong>เจ้าของร้าน:</strong> แชร์ลิงก์ให้พนักงานควบคุม</span>
+                </div>
+                <button onclick="copyStaffModeLink()" class="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-[11px] transition shadow-sm shrink-0 flex items-center gap-1">
+                    <i data-lucide="copy" class="w-3 h-3"></i>
+                    <span>คัดลอกลิงก์</span>
+                </button>
+            </div>
+
+            <!-- HERO DASHBOARD CARD (OWNER VIEW) -->
+            <div id="ownerDashboardCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-amber-950 rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+                
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-slate-400 font-medium tracking-wide">ยอดรวมจองวันที่ <span id="displaySelectedDate" class="text-amber-400 font-bold">-</span></span>
+                    <span id="valTotalBookings" class="text-[11px] bg-white/10 text-amber-300 px-2 py-0.5 rounded-full font-medium">0 คิว</span>
+                </div>
+                
+                <div class="text-3xl font-extrabold tracking-tight text-white mb-4" id="valTotalSales">฿0.00</div>
+
+                <div class="grid grid-cols-2 gap-3 pt-3 border-t border-white/10 text-xs">
+                    <div>
+                        <span class="text-slate-400 text-[10px] block">ยอดมัดจำที่ได้รับแล้ว</span>
+                        <span id="valTotalDeposit" class="font-bold text-emerald-400 text-sm">฿0.00</span>
+                        <span id="valDepositCount" class="text-[9px] text-slate-400 block truncate">0 คิวมีมัดจำ</span>
+                    </div>
+                    <div id="ownerDailyCommContainer" class="border-l border-white/10 pl-3">
+                        <span class="text-slate-400 text-[10px] block">คอมมิชชั่นพนักงาน (ประจำวัน)</span>
+                        <span id="valDailyCommission" class="font-bold text-amber-400 text-sm">฿0.00</span>
+                        <span id="valPendingAmount" class="text-[9px] text-slate-400 block truncate">คงเหลือ ฿0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MONTHLY COMMISSION AUDIT SUMMARY CARD -->
+            <div id="summaryCardContainer" class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5" id="summaryCardHeaderTitle">
+                        <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+                        สรุปยอดคอมมิชชั่นประจำเดือน (<span id="monthlyLabel">-</span>)
+                    </h2>
+                    <button onclick="toggleCommissionCollapse()" id="btnCollapseComm" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition flex items-center gap-1 text-[10px] font-bold">
+                        <span id="lblCollapseComm">พับเก็บ</span>
+                        <i data-lucide="chevron-up" id="iconCollapseComm" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                
+                <div id="commCollapsibleContent">
+                    <!-- OWNER VIEW BOXES -->
+                    <div id="ownerSummaryBoxes" class="grid grid-cols-3 gap-2 text-xs">
+                        <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <span class="text-slate-500 text-[9px] block truncate">ยอดจองรวม</span>
+                            <span id="monthlyTotalSales" class="font-bold text-slate-800 text-xs sm:text-sm">฿0.00</span>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            <span class="text-slate-500 text-[9px] block truncate">มัดจำรวม</span>
+                            <span id="monthlyTotalDeposit" class="font-bold text-emerald-600 text-xs sm:text-sm">฿0.00</span>
+                        </div>
+                        <div id="ownerCommBox" onclick="toggleCommissionDetailModal(true)" class="bg-amber-50/80 p-2 rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-100/80 active:scale-95 transition shadow-sm">
+                            <span class="text-amber-900 text-[9px] font-bold block truncate flex items-center justify-between">
+                                <span>คอมมิชชั่นพนักงาน</span>
+                                <i data-lucide="chevron-right" class="w-3 h-3 text-amber-600"></i>
+                            </span>
+                            <span id="monthlyTotalCommission" class="font-bold text-amber-600 text-xs sm:text-sm">฿0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- STAFF VIEW BOXES -->
+                    <div id="staffSummaryBoxes" class="hidden">
+                        <div onclick="toggleCommissionDetailModal(true)" 
+                             class="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 p-4 rounded-2xl text-slate-950 shadow-md relative overflow-hidden cursor-pointer hover:brightness-105 active:scale-95 transition border border-amber-300">
+                            
+                            <div class="absolute -right-3 -top-3 opacity-20 text-4xl select-none">🎉</div>
+                            <div class="absolute right-12 bottom-1 opacity-20 text-3xl select-none">✨</div>
+
+                            <div class="space-y-2.5 relative z-10">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-base leading-none">💰</span>
+                                    <span class="text-[12px] font-bold text-slate-950 tracking-tight">ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
+                                </div>
+
+                                <div class="flex justify-between items-end">
+                                    <div class="text-3xl font-black tracking-tight text-slate-950 drop-shadow-sm" id="staffMonthlyCommissionTotal">฿0.00</div>
+                                    
+                                    <div class="flex items-center gap-1 bg-slate-950 text-amber-400 px-3 py-1.5 rounded-xl shadow-md border border-amber-400/30">
+                                        <span class="text-xs font-black" id="staffMonthlyTotalQueues">0 คิว</span>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-amber-400"></i>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-950/20 text-[11px]">
+                                    <div class="bg-amber-600/20 p-2 rounded-xl flex justify-between items-center border border-amber-700/30">
+                                        <span class="text-slate-950 font-bold">คอมฯ แพ็กเกจ:</span>
+                                        <strong class="text-slate-950 font-black text-xs" id="staffBaseCommissionTotal">฿0.00</strong>
+                                    </div>
+                                    <div class="bg-amber-600/20 p-2 rounded-xl flex justify-between items-center border border-amber-700/30">
+                                        <span class="text-slate-950 font-bold">โบนัสพิเศษ:</span>
+                                        <strong class="text-slate-950 font-black text-xs" id="staffBonusCommissionTotal">+฿0.00</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CALENDAR SECTION CARD -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-1.5">
+                        <i data-lucide="calendar" class="w-4 h-4 text-amber-500"></i>
+                        <h2 class="font-bold text-xs text-slate-900" id="calendarMonthTitle">กำลังโหลด...</h2>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="changeMonth(-1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="changeMonth(1)" class="p-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                        <a id="btnCalendarExternal" href="https://calendar.google.com/calendar/u/1?cid=c2lyaWNob2tsYXBraGFtQGdtYWlsLmNvbQ" target="_blank" class="ml-1 bg-slate-900 text-amber-400 text-[10px] font-semibold px-2 py-1 rounded-lg transition flex items-center gap-1">
+                            <i data-lucide="external-link" class="w-3 h-3"></i>
+                            <span>ปฏิทิน</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-7 text-center text-[10px] font-bold text-slate-400 border-b border-slate-100 pb-1">
+                    <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1 text-center text-xs" id="calendarGrid"></div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="bg-white/90 border border-amber-300 p-3.5 rounded-2xl text-center font-medium text-amber-900 shadow-sm">
+                <div class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600 mr-2"></div>
+                <span id="loadingText" class="text-xs">กำลังเชื่อมต่อข้อมูลคิวจอง...</span>
+            </div>
+
+            <!-- ALERT BANNER -->
+            <div id="depositStatusBanner" class="rounded-2xl p-3.5 border transition-all duration-300 flex items-start gap-3 shadow-sm bg-emerald-50 border-emerald-200 text-emerald-800">
+                <i data-lucide="shield-check" class="w-5 h-5 text-emerald-500 shrink-0"></i>
+                <div class="text-xs">
+                    <span class="font-bold block" id="bannerTitle">สรุปภาพรวมวันที่เลือก</span>
+                    <span class="text-[10px] text-slate-600 block" id="bannerSub">เลือกวันที่ในปฏิทินด้านบนเพื่อดูตารางเวลาและยอดมัดจำ</span>
+                </div>
+            </div>
+
+            <!-- BUTTON ADD BOOKING -->
+            <div class="flex justify-between items-center px-1">
+                <button onclick="toggleAddBookingModal(true)" class="w-full py-3 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-2xl text-xs transition flex items-center justify-center gap-2 shadow-md">
+                    <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                    <span>+ กรอกคิวสำหรับลูกค้า Walk in ที่หน้าร้าน</span>
+                </button>
+            </div>
+
+            <!-- BOOKING SCHEDULE LIST CARD -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center px-1">
+                    <h2 class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="clock" class="w-4 h-4 text-indigo-500"></i>
+                        ตารางคิวเรียงตามเวลา (เช้า ➔ เย็น)
+                    </h2>
+                    <span id="bookingListCount" class="text-[10px] font-medium text-slate-500">0 รายการ</span>
+                </div>
+                <div id="bookingListContainer" class="space-y-2"></div>
+            </div>
+
+        </main>
+
+        <!-- MODAL รายละเอียดสรุปแพ็กเกจคอมมิชชั่นประจำเดือน -->
+        <div id="commissionDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-3.5 max-h-[85vh] flex flex-col">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="award" class="w-4 h-4 text-amber-500"></i>
+                        <span>สรุปคอมมิชชั่นประจำเดือน (<span id="modalCommMonthLabel">-</span>)</span>
+                    </h3>
+                    <button onclick="toggleCommissionDetailModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 p-4 rounded-2xl text-slate-950 space-y-2 shadow-md shrink-0 relative overflow-hidden border border-amber-300">
+                    <div class="absolute -right-2 -top-2 opacity-20 text-3xl">🎉</div>
+                    <div class="flex justify-between items-center relative z-10">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-950 block">💰 ยอดรวมคอมมิชชั่นพนักงานเดือนนี้</span>
+                            <span class="text-2xl font-black text-slate-950" id="modalCommTotalAmt">฿0.00</span>
+                        </div>
+                        <span class="text-xs font-black bg-slate-950 text-amber-400 px-3 py-1.5 rounded-xl shadow-sm" id="modalCommTotalQueues">0 คิว</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-950/20 text-[11px] relative z-10">
+                        <div class="bg-amber-600/20 p-2 rounded-xl flex justify-between items-center border border-amber-700/30">
+                            <span class="text-slate-950 font-bold">คอมฯ แพ็กเกจ:</span>
+                            <strong class="text-slate-950 font-black text-xs" id="modalBaseCommTotal">฿0.00</strong>
+                        </div>
+                        <div class="bg-amber-600/20 p-2 rounded-xl flex justify-between items-center border border-amber-700/30">
+                            <span class="text-slate-950 font-bold">โบนัสพิเศษ:</span>
+                            <strong class="text-slate-950 font-black text-xs" id="modalBonusCommTotal">+฿0.00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto space-y-3 pr-1">
+                    <div class="space-y-1.5">
+                        <span class="text-[11px] font-bold text-amber-900 block flex items-center gap-1 sticky top-0 bg-white py-1">
+                            <i data-lucide="gift" class="w-3.5 h-3.5 text-amber-600"></i>
+                            <span>รายการโบนัสพิเศษจากเจ้าของร้าน (แยกตามคิวงาน):</span>
+                        </span>
+                        <div id="modalBonusBreakdownList" class="space-y-1.5 text-xs"></div>
+                    </div>
+
+                    <hr class="border-slate-100">
+
+                    <div class="space-y-1.5">
+                        <span class="text-[11px] font-bold text-slate-700 block flex items-center gap-1 sticky top-0 bg-white py-1">
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-amber-500"></i>
+                            <span>สรุปแพ็กเกจที่คุณทำได้เดือนนี้ (คิว):</span>
+                        </span>
+                        <div id="modalPackageBreakdownList" class="space-y-2 text-xs"></div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-100">
+                    <button onclick="toggleCommissionDetailModal(false)" class="w-full py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">
+                        ปิดหน้าต่าง
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal เพิ่มคิวจองใหม่ -->
+        <div id="addBookingModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-3 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="calendar-plus" class="w-4 h-4 text-amber-500"></i>
+                        กรอกข้อมูลคิวจองใหม่
+                    </h3>
+                    <button onclick="toggleAddBookingModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <form id="addBookingForm" onsubmit="submitNewBooking(event)" class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">ชื่อลูกค้า / ชื่อเล่น <span class="text-rose-500">*</span></label>
+                        <input type="text" id="addCustName" required value="ลูกค้า Walk in ไม่ทราบชื่อ" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">เบอร์โทรศัพท์</label>
+                        <input type="text" id="addCustPhone" value="ไม่มีเบอร์ติดต่อ" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">วันที่นัดหมาย <span class="text-rose-500">*</span></label>
+                            <input type="date" id="addBookingDate" required class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">เวลาเข้าใช้บริการ <span class="text-rose-500">*</span></label>
+                            <input type="text" id="addBookingTime" required placeholder="เช่น 12.00-13.00 หรือ 1200" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- DROPDOWN เลือกแพ็กเกจด่วน (อัปเดตระบบคำนวณคอมมิชชั่นให้ถูกต้อง) -->
+                    <div class="bg-amber-50 p-2.5 rounded-2xl border border-amber-200 space-y-1.5">
+                        <label class="block text-amber-900 font-bold flex items-center gap-1">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-600"></i>
+                            <span>เลือกจากแพ็กเกจของร้าน (คำนวณราคาอัตโนมัติ)</span>
+                        </label>
+                        <select id="selectPresetPackage" onchange="applyPackagePreset(this.value)" class="w-full p-2 bg-white border border-amber-300 rounded-xl font-medium text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs">
+                            <option value="">-- เลือกแพ็กเกจด่วน หรือ พิมพ์เองด้านล่าง --</option>
+                            <optgroup label="📸 เซลฟี่สตูดิโอ (ครึ่งตัว) 1-2 คน">
+                                <option value="เซลฟี่สตูดิโอ ครึ่งตัว 10 นาที (1-2 คน)|199">10 นาที - 199 บาท (แถมปริ้น 1 ใบ) [คอมมิชชั่น 10 บาท]</option>
+                                <option value="เซลฟี่สตูดิโอ ครึ่งตัว 20 นาที (1-2 คน)|350">20 นาที - 350 บาท (แถมปริ้น 2 ใบ) [คอมมิชชั่น 20 บาท]</option>
+                            </optgroup>
+                            <optgroup label="📸 เซลฟี่สตูดิโอ (เต็มตัว/ครึ่งตัว) 1-2 คน [คอมมิชชั่น 20 บาท]">
+                                <option value="เซลฟี่สตูดิโอ เต็มตัว/ครึ่งตัว 10 นาที (1-2 คน)|249">10 นาที - 249 บาท (แถมปริ้น 1 ใบ)</option>
+                                <option value="เซลฟี่สตูดิโอ เต็มตัว/ครึ่งตัว 20 นาที (1-2 คน)|400">20 นาที - 400 บาท (แถมปริ้น 2 ใบ)</option>
+                            </optgroup>
+                            <optgroup label="📷 ถ่ายโปรไฟล์ พร้อมช่างภาพ (20 นาที) [คอมมิชชั่น 20 บาท]">
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (1 คน)|450">1 คน - 450 บาท (แถมปริ้น 1 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (2 คน)|550">2 คน - 550 บาท (แถมปริ้น 2 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (3 คน)|650">3 คน - 650 บาท (แถมปริ้น 3 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 20 นาที (4 คน)|750">4 คน - 750 บาท (แถมปริ้น 4 ใบ)</option>
+                            </optgroup>
+                            <optgroup label="📷 ถ่ายโปรไฟล์ พร้อมช่างภาพ (40 นาที) [คอมมิชชั่น 20 บาท]">
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (1 คน)|900">1 คน - 900 บาท (แถมปริ้น 1 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (2 คน)|1000">2 คน - 1,000 บาท (แถมปริ้น 2 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (3 คน)|1100">3 คน - 1,100 บาท (แถมปริ้น 3 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (4 คน)|1200">4 คน - 1,200 บาท (แถมปริ้น 4 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (5 คน)|1300">5 คน - 1,300 บาท (แถมปริ้น 5 ใบ)</option>
+                                <option value="ถ่ายโปรไฟล์ พร้อมช่างภาพ 40 นาที (6 คน)|1400">6 คน - 1,400 บาท (แถมปริ้น 6 ใบ)</option>
+                            </optgroup>
+                            <optgroup label="🏠 เช่าสตูดิโอ (เฉพาะสถานที่) [คอมมิชชั่น 20 บาท]">
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 1 ชั่วโมง|500">1 ชั่วโมง - 500 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 2 ชั่วโมง|1000">2 ชั่วโมง - 1,000 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 3 ชั่วโมง|1500">3 ชั่วโมง - 1,500 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 4 ชั่วโมง|2000">4 ชั่วโมง - 2,000 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 5 ชั่วโมง|2400">5 ชั่วโมง - 2,400 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 6 ชั่วโมง|2800">6 ชั่วโมง - 2,800 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 7 ชั่วโมง|3200">7 ชั่วโมง - 3,200 บาท</option>
+                                <option value="เช่าสตูดิโอ เฉพาะสถานที่ 8 ชั่วโมง|3600">8 ชั่วโมง - 3,600 บาท</option>
+                            </optgroup>
+                            <optgroup label="📷 เช่าสตูดิโอ (พร้อมช่างภาพ) [คอมมิชชั่น 20 บาท]">
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 1 ชั่วโมง|1500">1 ชั่วโมง - 1,500 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 2 ชั่วโมง|3000">2 ชั่วโมง - 3,000 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 3 ชั่วโมง|3900">3 ชั่วโมง - 3,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 4 ชั่วโมง|4900">4 ชั่วโมง - 4,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 5 ชั่วโมง|5900">5 ชั่วโมง - 5,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 6 ชั่วโมง|6900">6 ชั่วโมง - 6,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 7 ชั่วโมง|7900">7 ชั่วโมง - 7,900 บาท</option>
+                                <option value="เช่าสตูดิโอ พร้อมช่างภาพ 8 ชั่วโมง|8900">8 ชั่วโมง - 8,900 บาท</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">แพ็กเกจ / บริการที่เลือก <span class="text-rose-500">*</span></label>
+                        <input type="text" id="addPackageName" required placeholder="เลือกจากเมนูด้านบน หรือพิมพ์ชื่อแพ็กเกจที่นี่" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">คำอธิบายแทน ข้อมูลเพิ่มเติม ที่พนักงานโน้ตลงไปได้</label>
+                        <input type="text" id="addLocation" placeholder="เช่น ชำระเงินสดหน้าร้าน / ลูกค้าขอไฟล์เพิ่ม" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">ราคาปกติ (บาท)</label>
+                            <input type="number" id="addTotalAmt" oninput="calculateNetTotal()" placeholder="เช่น 199" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-rose-600 font-medium mb-1">ส่วนลด (บาท)</label>
+                            <input type="number" id="addDiscountAmt" oninput="calculateNetTotal()" placeholder="เช่น 20" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:outline-none font-bold text-rose-600">
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 font-medium mb-1">มัดจำแล้ว (บาท)</label>
+                            <input type="number" id="addDepositAmt" placeholder="เช่น 100" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-emerald-600">
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" id="btnSubmitNewBooking" class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2">
+                            <span>บันทึกลงปฏิทิน</span>
+                        </button>
+                        <button type="button" onclick="toggleAddBookingModal(false)" class="py-3 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                            ยกเลิก
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- MODAL เพิ่ม/ลด คอมมิชชั่นพิเศษ โดยเจ้าของร้าน -->
+        <div id="bonusCommissionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="gift" class="w-4 h-4 text-amber-500"></i>
+                        ปรับเพิ่ม/ลด คอมมิชชั่นพิเศษ
+                    </h3>
+                    <button onclick="toggleBonusCommissionModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <input type="hidden" id="bonusBookingId">
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">จำนวนคอมมิชชั่นพิเศษ Bonus (บาท):</label>
+                        <input type="number" id="inputBonusAmount" placeholder="เช่น 50 หรือ -20" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-bold text-amber-600">
+                        <p class="text-[10px] text-slate-400 mt-1">*ใส่ตัวเลขบวกเพื่อเพิ่มเป็นโบนัส หรือใส่ติดลบ (-) หากต้องการปรับลด</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="submitBonusCommission()" id="btnSaveBonusComm" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-xs transition">
+                        บันทึกคอมมิชชั่นพิเศษ
+                    </button>
+                    <button onclick="toggleBonusCommissionModal(false)" class="py-2.5 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal เลื่อนวัน/เวลาจอง -->
+        <div id="rescheduleModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="calendar-clock" class="w-4 h-4 text-amber-500"></i>
+                        เลื่อนวัน / เวลาจอง
+                    </h3>
+                    <button onclick="toggleRescheduleModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <input type="hidden" id="rescheduleBookingId">
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">วันที่นัดหมายใหม่ <span class="text-rose-500">*</span></label>
+                        <input type="date" id="inputNewDate" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">เวลาเข้าใช้บริการใหม่ <span class="text-rose-500">*</span></label>
+                        <input type="text" id="inputNewTime" placeholder="เช่น 12.30-13.00 หรือ 1230" class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <p class="text-[10px] text-slate-400 mt-1">*หากพิมพ์ผิด เช่น 1230 ระบบจะแปลงเป็น 12:30 น. ให้อัตโนมัติ</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="submitReschedule()" id="btnSaveReschedule" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-xl text-xs transition">
+                        บันทึกการเลื่อนวัน/เวลา
+                    </button>
+                    <button onclick="toggleRescheduleModal(false)" class="py-2.5 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal ถังขยะคิวจอง -->
+        <div id="trashModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-3 max-h-[85vh] flex flex-col">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
+                        ถังขยะคิวจอง (กู้คืนคิวงาน)
+                    </h3>
+                    <div class="flex items-center gap-1">
+                        <button onclick="clearAllTrash()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-xl text-[10px] font-bold transition flex items-center gap-1" title="ล้างถังขยะ">
+                            <i data-lucide="sparkles" class="w-3 h-3"></i>
+                            <span>ล้างถังขยะ</span>
+                        </button>
+                        <button onclick="toggleTrashModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="trashListContainer" class="space-y-2 overflow-y-auto flex-1 text-xs pr-1">
+                    <div class="text-center py-6 text-slate-400">กำลังโหลดรายการถังขยะ...</div>
+                </div>
+
+                <div class="pt-2">
+                    <button onclick="toggleTrashModal(false)" class="w-full py-2.5 bg-slate-100 text-slate-700 font-semibold rounded-xl text-xs">
+                        ปิดหน้าต่าง
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal ยืนยันการลบคิวจอง -->
+        <div id="deleteConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl text-center space-y-3">
+                <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="font-bold text-slate-900 text-sm">ยืนยันการย้ายลงถังขยะ?</h3>
+                <p class="text-xs text-slate-500 leading-relaxed" id="deleteConfirmText">คุณต้องการย้ายคิวงานนี้ไปยังถังขยะใช่หรือไม่?</p>
+                <div class="flex gap-2 pt-1">
+                    <button id="btnConfirmDelete" class="flex-1 py-2.5 bg-rose-600 text-white rounded-xl text-xs font-bold active:scale-95 transition">
+                        ตกลง ย้ายลงถังขยะ
+                    </button>
+                    <button onclick="toggleDeleteConfirmModal(false)" class="py-2.5 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal ใบจองออนไลน์ -->
+        <div id="receiptModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
+            <div class="modal-box bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 my-auto relative">
+                <div id="receiptCard" class="bg-white p-4 rounded-2xl border border-slate-200 space-y-3.5">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <img src="https://lh3.googleusercontent.com/d/13URW3wYnrYhy0aHzrwHG5Xx83pvcyBvL" class="w-10 h-10 rounded-full object-cover border border-amber-500/30">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base leading-tight">037Studio</h3>
+                                <p class="text-[10px] text-amber-600 font-semibold">ใบสรุปยืนยันการจองออนไลน์</p>
+                            </div>
+                        </div>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-mono" id="recBookingNo">#BOOK-01</span>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-slate-900 to-amber-950 text-white p-3.5 rounded-2xl text-center space-y-1 shadow-md">
+                        <span class="text-[10px] text-amber-300 font-medium block">⏰ เวลาเข้าใช้บริการ / นัดหมาย</span>
+                        <div class="text-xl font-extrabold text-amber-400 tracking-tight" id="recTime">18:00 - 19:00 น.</div>
+                        <div class="text-[12px] font-bold text-slate-200" id="recDate">28-10-2026</div>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                            <span class="text-slate-400 text-[11px]">ชื่อลูกค้า:</span>
+                            <strong class="text-slate-800" id="recCustName">คุณลูกค้า</strong>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                            <span class="text-slate-400 text-[11px]">เบอร์โทรศัพท์:</span>
+                            <strong class="text-slate-800 font-mono" id="recCustPhone">095-671-3869</strong>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1.5">
+                            <span class="text-slate-400 text-[11px]">แพ็กเกจ/บริการ:</span>
+                            <strong class="text-slate-800 text-right max-w-[180px]" id="recPackage">แพ็กเกจถ่ายภาพ Studio</strong>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-50 pb-1.5" id="recLocationRow">
+                            <span class="text-slate-400 text-[11px]">โน้ต/คำอธิบาย:</span>
+                            <strong class="text-slate-800 text-right max-w-[180px]" id="recLocation">037Studio ขอนแก่น</strong>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1.5 text-xs">
+                        <div class="flex justify-between text-slate-600">
+                            <span>ยอดบริการรวมทั้งหมด:</span>
+                            <strong class="text-slate-900" id="recTotalAmt">฿0.00</strong>
+                        </div>
+                        <div class="flex justify-between text-emerald-600 font-medium">
+                            <span>ชำระมัดจำแล้ว:</span>
+                            <strong id="recDepositAmt">฿0.00</strong>
+                        </div>
+                        <div class="flex justify-between text-amber-700 font-bold border-t border-slate-200 pt-1.5 text-sm">
+                            <span>คงเหลือชำระหน้างาน:</span>
+                            <span id="recBalanceAmt">฿0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 text-amber-800 rounded-xl p-2.5 text-center text-[11px] font-semibold space-y-0.5">
+                        <div class="flex items-center justify-center gap-1">
+                            <i data-lucide="camera" class="w-3.5 h-3.5 text-amber-600"></i>
+                            <span>แคปหน้าจอเพื่อยื่นให้พนักงานที่ร้าน</span>
+                        </div>
+                        <p class="text-[9px] text-slate-500 font-normal">*กรุณามาถึงก่อนเวลาประมาณ 10-15 นาที ขอบพระคุณที่ใช้บริการ 037Studio ครับ</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <button onclick="shareModalReceipt()" class="w-full py-2.5 bg-slate-900 text-amber-400 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2 shadow-sm">
+                        <i data-lucide="share-2" class="w-4 h-4"></i>
+                        <span>📲 แชร์ใบจองให้เพื่อน</span>
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="copyReceiptText()" class="flex-1 py-2 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-1">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                            <span>คัดลอกข้อความส่ง LINE</span>
+                        </button>
+                        <button onclick="toggleReceiptModal(false)" class="py-2 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                            ปิด
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEPOSIT & SLIP UPLOAD MODAL -->
+        <div id="depositModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="credit-card" class="w-4 h-4 text-amber-500"></i>
+                        กรอกมัดจำ & แนบสลิปโอนเงิน
+                    </h3>
+                    <button onclick="toggleDepositModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <input type="hidden" id="modalBookingId">
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-slate-700 font-medium">ยอดเงินมัดจำ (บาท):</label>
+                            <span class="text-[10px] text-amber-600 font-medium">*คำนวณมัดจำ 50% ให้อัตโนมัติ</span>
+                        </div>
+                        <input type="number" id="inputDepositAmount" placeholder="เช่น 500" 
+                               class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs font-bold text-slate-800">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">แนบไฟล์รูปสลิป:</label>
+                        <input type="file" id="inputSlipFile" accept="image/*" 
+                               class="w-full p-2 border border-slate-300 rounded-xl text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+                        <p class="text-[10px] text-slate-400 mt-1">ไฟล์สลิปจะถูกอัปโหลดตรงไปยัง Google Drive โฟลเดอร์สลิปของร้าน</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button onclick="submitDepositAndSlip()" id="btnSaveDeposit" class="flex-1 py-3 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition flex justify-center items-center gap-2">
+                        <span>บันทึกข้อมูล</span>
+                    </button>
+                    <button onclick="toggleDepositModal(false)" class="py-3 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS MODAL -->
+        <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                        <i data-lucide="settings" class="w-4 h-4 text-amber-500"></i>
+                        ตั้งค่าความเชื่อมโยง Google Sheets / Script
+                    </h3>
+                    <button onclick="toggleSettingsModal(false)" class="p-1 rounded-full bg-slate-100 text-slate-500">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-slate-700 font-medium mb-1">Google Apps Script Web App URL:</label>
+                        <input type="url" id="inputScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" 
+                               class="w-full p-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs">
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="saveSettings()" class="flex-1 py-2.5 bg-amber-500 text-slate-900 rounded-xl text-xs font-bold active:scale-95 transition">
+                        บันทึกการตั้งค่า
+                    </button>
+                    <button onclick="toggleSettingsModal(false)" class="py-2.5 px-4 bg-slate-100 text-slate-600 rounded-xl text-xs font-semibold">
+                        ยกเลิก
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Bottom Navigation Bar -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 shadow-lg">
+            <div class="max-w-md mx-auto h-16 relative flex justify-around items-center px-2">
+                <div id="navTabIndicator" class="tab-indicator absolute bottom-0 left-0 h-1 rounded-t-full bg-amber-500 w-1/3"></div>
+
+                <button onclick="switchTab('studio')" id="tabBtnStudio" class="tab-item active flex-1 flex flex-col items-center justify-center gap-1 text-amber-600 font-bold h-full">
+                    <i data-lucide="camera" id="iconTabStudio" class="w-5 h-5 transition-transform duration-300"></i>
+                    <span class="text-[10px] tracking-tight">037Studio</span>
+                </button>
+                
+                <button onclick="switchTab('photobooth')" id="tabBtnPhotobooth" class="tab-item flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 h-full">
+                    <i data-lucide="sparkles" id="iconTabPB" class="w-5 h-5 transition-transform duration-300"></i>
+                    <span class="text-[10px] font-medium tracking-tight">PhotoBooth</span>
+                </button>
+
+                <button onclick="toggleStaffModeNav()" id="tabBtnStaff" class="tab-item flex-1 flex flex-col items-center justify-center gap-1 text-slate-400 hover:text-slate-600 h-full">
+                    <i data-lucide="user-check" id="iconTabStaff" class="w-5 h-5 transition-transform duration-300"></i>
+                    <span class="text-[10px] font-medium tracking-tight">โหมดพนักงาน</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCNAyy8zVmnELaWhRqLCvQo0RDUiFd9Ri10ORfSqzzIpL3oodwYsmDuNnYxh_AGck/exec";
+        let SCRIPT_URL = DEFAULT_SCRIPT_URL;
+
+        let currentTab = "studio";
+        let isStaffMode = false;
+        let isLockedByUrl = false;
+        let isCommCollapsed = false;
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        let selectedDateStr = new Date().toISOString().split('T')[0];
+        
+        let monthlyDataCache = {};
+        let dailyDataCache = {};
+        let activeReceiptData = null;
+        let standaloneBookingObj = null;
+        let pendingDeleteId = null;
+
+        const thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+
+        function isEligibleCommissionPackage(title) {
+            if (currentTab === 'photobooth') return false;
+            
+            if (!title) return false;
+            const clean = title.toString().trim().toLowerCase();
+
+            if (clean.includes("ออกแบบ") || clean.includes("กราฟิก") || clean.includes("แต่งรูป") || clean.includes("ไฟล์รูป")) {
+                return false;
+            }
+            return true;
+        }
+
+        function getNormalizedPackageName(rawTitle) {
+            if (!rawTitle) return "แพ็กเกจทั่วไป";
+            let name = rawTitle.split('-')[0].trim();
+
+            if (name.includes("เซลฟี่สตูดิโอ ครึ่งตัว")) return "เซลฟี่สตูดิโอ (ครึ่งตัว)";
+            if (name.includes("เซลฟี่สตูดิโอ เต็มตัว")) return "เซลฟี่สตูดิโอ (เต็มตัว/ครึ่งตัว)";
+            if (name.includes("ถ่ายโปรไฟล์ พร้อมช่างภาพ")) return "ถ่ายโปรไฟล์ พร้อมช่างภาพ";
+            if (name.includes("เช่าสตูดิโอ เฉพาะสถานที่")) return "เช่าสตูดิโอ (เฉพาะสถานที่)";
+            if (name.includes("เช่าสตูดิโอ พร้อมช่างภาพ")) return "เช่าสตูดิโอ (พร้อมช่างภาพ)";
+
+            return name;
+        }
+
+        // ปรับแก้เงื่อนไขคำนวณค่าคอมมิชชั่นพื้นฐาน
+        function getBaseCommissionOnly(title) {
+            if (currentTab === 'photobooth') return 0;
+            if (!title || !isEligibleCommissionPackage(title)) return 0;
+            
+            const cleanTitle = title.toString().trim();
+            
+            // เฉพาะแพ็กเกจ "เซลฟี่สตูดิโอ ครึ่งตัว 10 นาที" เท่านั้นที่ได้ 10 บาท
+            if (cleanTitle.includes("10 นาที") && (cleanTitle.includes("ครึ่งตัว") || cleanTitle.includes("เซลฟี่สตูดิโอ"))) {
+                return 10;
+            }
+            
+            // แพ็กเกจอื่นๆ ทั้งหมด (รวมถึง 20 นาที, เต็มตัว, โปรไฟล์, เช่าสถานที่) ได้ 20 บาท
+            return 20;
+        }
+
+        function getBonusCommissionOnly(desc = "") {
+            if (currentTab === 'photobooth') return 0;
+            if (!desc) return 0;
+            const bonusMatch = desc.match(/คอมฯ พิเศษ\s*[:=]?\s*([0-9,-.]+)/i);
+            return bonusMatch ? (parseFloat(bonusMatch[1].replace(/,/g, '')) || 0) : 0;
+        }
+
+        function getCommissionAmount(title, desc = "") {
+            if (currentTab === 'photobooth') return 0;
+            return getBaseCommissionOnly(title) + getBonusCommissionOnly(desc);
+        }
+
+        function renderIcons() {
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function formatDateToDDMMYYYY(dateStr) {
+            if (!dateStr) return '';
+            const parts = String(dateStr).split('T')[0].split('-');
+            if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+            return dateStr;
+        }
+
+        function toggleCommissionCollapse() {
+            isCommCollapsed = !isCommCollapsed;
+            const content = document.getElementById("commCollapsibleContent");
+            const lbl = document.getElementById("lblCollapseComm");
+            const icon = document.getElementById("iconCollapseComm");
+
+            if (isCommCollapsed) {
+                content.classList.add("hidden");
+                lbl.innerText = "ขยายออก";
+                icon.setAttribute("data-lucide", "chevron-down");
+            } else {
+                content.classList.remove("hidden");
+                lbl.innerText = "พับเก็บ";
+                icon.setAttribute("data-lucide", "chevron-up");
+            }
+            renderIcons();
+        }
+
+        function applyPackagePreset(val) {
+            if (!val) return;
+            const parts = val.split('|');
+            const name = parts[0];
+            const price = Number(parts[1]) || 0;
+
+            document.getElementById("addPackageName").value = name;
+            document.getElementById("addTotalAmt").value = price;
+            document.getElementById("addDiscountAmt").value = '';
+            document.getElementById("addDepositAmt").value = Math.round(price * 0.5);
+        }
+
+        function calculateNetTotal() {
+            const rawPrice = Number(document.getElementById("addTotalAmt").value) || 0;
+            const discount = Number(document.getElementById("addDiscountAmt").value) || 0;
+            const netPrice = Math.max(0, rawPrice - discount);
+            document.getElementById("addDepositAmt").value = Math.round(netPrice * 0.5);
+        }
+
+        function toggleCommissionDetailModal(show) {
+            if (currentTab === 'photobooth') return;
+            const modal = document.getElementById("commissionDetailModal");
+            if (show) {
+                document.getElementById("modalCommMonthLabel").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
+                modal.classList.remove("hidden");
+            } else {
+                modal.classList.add("hidden");
+            }
+        }
+
+        function openBonusCommissionModal(bookingId, currentBonus) {
+            document.getElementById("bonusBookingId").value = bookingId;
+            document.getElementById("inputBonusAmount").value = currentBonus || '';
+            toggleBonusCommissionModal(true);
+        }
+
+        function toggleBonusCommissionModal(show) {
+            const modal = document.getElementById("bonusCommissionModal");
+            if (show) modal.classList.remove("hidden");
+            else modal.classList.add("hidden");
+        }
+
+        async function submitBonusCommission() {
+            const bookingId = document.getElementById("bonusBookingId").value;
+            const bonusAmount = document.getElementById("inputBonusAmount").value;
+
+            const btn = document.getElementById("btnSaveBonusComm");
+            btn.disabled = true;
+            btn.innerText = "กำลังบันทึก...";
+
+            try {
+                const payload = {
+                    action: "updateBonusCommission",
+                    type: currentTab,
+                    bookingId: bookingId,
+                    bonusAmount: bonusAmount
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("อัปเดตคอมมิชชั่นพิเศษเรียบร้อยแล้ว!");
+                toggleBonusCommissionModal(false);
+                await initApp(true);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "บันทึกคอมมิชชั่นพิเศษ";
+            }
+        }
+
+        async function markAsFullyPaid(bookingId, totalPrice) {
+            const loading = document.getElementById("loadingIndicator");
+            document.getElementById("loadingText").innerText = "กำลังอัปเดตเป็นชำระครบแล้ว...";
+            loading.classList.remove("hidden");
+
+            try {
+                const payload = {
+                    action: "updateDeposit",
+                    type: currentTab,
+                    bookingId: bookingId,
+                    depositAmount: totalPrice,
+                    slipBase64: "",
+                    slipFileName: ""
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("อัปเดตเป็นชำระครบแล้วเรียบร้อย!");
+                await initApp(true);
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการอัปเดต: " + err.message);
+            } finally {
+                loading.classList.add("hidden");
+            }
+        }
+
+        function getReceiptPublicUrl(bookingId) {
+            const baseUrl = window.location.origin + window.location.pathname;
+            return `${baseUrl}?receipt=${bookingId}&type=${currentTab}`;
+        }
+
+        function copyStaffModeLink() {
+            const baseUrl = window.location.origin + window.location.pathname;
+            const staffUrl = `${baseUrl}?mode=staff`;
+            navigator.clipboard.writeText(staffUrl).then(() => {
+                alert("คัดลอกลิงก์โหมดพนักงานเรียบร้อยแล้ว!\nนำไปส่งให้พนักงานร้านใช้งานได้ทันที:\n" + staffUrl);
+            });
+        }
+
+        function checkStaffModeFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'staff') {
+                isStaffMode = true;
+                isLockedByUrl = true;
+                applyStaffModeUI();
+            }
+        }
+
+        function toggleStaffModeNav() {
+            if (isLockedByUrl) {
+                alert("🔒 โหมดพนักงานถูกล็อคโดยเจ้าของร้าน ไม่สามารถสลับกลับเป็นโหมดเจ้าของร้านได้");
+                return;
+            }
+            isStaffMode = !isStaffMode;
+            updateTabNavigationUI();
+            applyStaffModeUI();
+        }
+
+        function updateTabNavigationUI() {
+            const indicator = document.getElementById("navTabIndicator");
+            const btnStudio = document.getElementById("tabBtnStudio");
+            const btnPB = document.getElementById("tabBtnPhotobooth");
+            const btnStaff = document.getElementById("tabBtnStaff");
+
+            [btnStudio, btnPB, btnStaff].forEach(b => {
+                b.classList.remove("active", "text-amber-600", "text-pink-600", "text-emerald-600", "font-bold");
+                b.classList.add("text-slate-400");
+            });
+
+            if (isStaffMode) {
+                indicator.style.transform = "translateX(200%)";
+                indicator.className = "tab-indicator absolute bottom-0 left-0 h-1 rounded-t-full bg-emerald-500 w-1/3";
+                btnStaff.classList.add("active", "text-emerald-600", "font-bold");
+                btnStaff.classList.remove("text-slate-400");
+            } else if (currentTab === 'photobooth') {
+                indicator.style.transform = "translateX(100%)";
+                indicator.className = "tab-indicator absolute bottom-0 left-0 h-1 rounded-t-full bg-pink-500 w-1/3";
+                btnPB.classList.add("active", "text-pink-600", "font-bold");
+                btnPB.classList.remove("text-slate-400");
+            } else {
+                indicator.style.transform = "translateX(0%)";
+                indicator.className = "tab-indicator absolute bottom-0 left-0 h-1 rounded-t-full bg-amber-500 w-1/3";
+                btnStudio.classList.add("active", "text-amber-600", "font-bold");
+                btnStudio.classList.remove("text-slate-400");
+            }
+        }
+
+        function applyStaffModeUI() {
+            const ownerDash = document.getElementById("ownerDashboardCard");
+            const ownerSummaryBoxes = document.getElementById("ownerSummaryBoxes");
+            const staffSummaryBoxes = document.getElementById("staffSummaryBoxes");
+            const summaryHeaderTitle = document.getElementById("summaryCardHeaderTitle");
+            const ownerPanel = document.getElementById("ownerShareStaffPanel");
+            const btnSet = document.getElementById("btnSettings");
+            const badgeStaff = document.getElementById("badgeStaffMode");
+
+            const studioBtn = document.getElementById("tabBtnStudio");
+            const pbBtn = document.getElementById("tabBtnPhotobooth");
+
+            if (isStaffMode) {
+                ownerDash.classList.add("hidden");
+                ownerSummaryBoxes.classList.add("hidden");
+                staffSummaryBoxes.classList.remove("hidden");
+                
+                summaryHeaderTitle.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-amber-500"></i> สรุปยอดคอมมิชชั่นประจำเดือน (<span id="monthlyLabel">${thaiMonths[currentMonth]} ${currentYear}</span>)`;
+
+                ownerPanel.classList.add("hidden");
+                btnSet.classList.add("hidden");
+                badgeStaff.classList.remove("hidden");
+
+                studioBtn.className = "tab-item flex-1 flex flex-col items-center justify-center gap-1 text-slate-300 opacity-60 cursor-not-allowed h-full";
+                pbBtn.className = "tab-item flex-1 flex flex-col items-center justify-center gap-1 text-slate-300 opacity-60 cursor-not-allowed h-full";
+
+                studioBtn.innerHTML = `<i data-lucide="lock" class="w-5 h-5 text-slate-400"></i><span class="text-[10px]">037Studio</span>`;
+                pbBtn.innerHTML = `<i data-lucide="lock" class="w-5 h-5 text-slate-400"></i><span class="text-[10px]">PhotoBooth</span>`;
+            } else {
+                ownerDash.classList.remove("hidden");
+                ownerSummaryBoxes.classList.remove("hidden");
+                staffSummaryBoxes.classList.add("hidden");
+
+                summaryHeaderTitle.innerHTML = `<i data-lucide="award" class="w-4 h-4 text-amber-500"></i> สรุปยอดคอมมิชชั่นประจำเดือน (<span id="monthlyLabel">${thaiMonths[currentMonth]} ${currentYear}</span>)`;
+
+                ownerPanel.classList.remove("hidden");
+                btnSet.classList.remove("hidden");
+                badgeStaff.classList.add("hidden");
+
+                studioBtn.innerHTML = `<i data-lucide="camera" class="w-5 h-5"></i><span class="text-[10px]">037Studio</span>`;
+                pbBtn.innerHTML = `<i data-lucide="sparkles" class="w-5 h-5"></i><span class="text-[10px] font-medium">PhotoBooth</span>`;
+            }
+
+            updateTabNavigationUI();
+            renderIcons();
+            calculateMonthlyTotals();
+        }
+
+        function switchTab(type) {
+            if (isStaffMode) {
+                alert("🔒 คุณอยู่ในโหมดพนักงาน ไม่สามารถเข้าถึงหรือเปลี่ยนกลุ่มงานได้");
+                return;
+            }
+            if (currentTab === type) return;
+            currentTab = type;
+            updateTabNavigationUI();
+            initApp(true);
+        }
+
+        function toggleAddBookingModal(show) {
+            const modal = document.getElementById("addBookingModal");
+            if (show) {
+                document.getElementById("addBookingDate").value = selectedDateStr;
+                document.getElementById("addCustName").value = "ลูกค้า Walk in ไม่ทราบชื่อ";
+                document.getElementById("addCustPhone").value = "ไม่มีเบอร์ติดต่อ";
+                document.getElementById("addDiscountAmt").value = "";
+                document.getElementById("selectPresetPackage").value = "";
+                modal.classList.remove("hidden");
+            } else {
+                modal.classList.add("hidden");
+            }
+        }
+
+        function openRescheduleModal(bookingId, currentValTime) {
+            document.getElementById("rescheduleBookingId").value = bookingId;
+            document.getElementById("inputNewDate").value = selectedDateStr;
+            document.getElementById("inputNewTime").value = currentValTime || "";
+            document.getElementById("rescheduleModal").classList.remove("hidden");
+        }
+
+        function toggleRescheduleModal(show) {
+            const modal = document.getElementById("rescheduleModal");
+            if (show) modal.classList.remove("hidden");
+            else modal.classList.add("hidden");
+        }
+
+        async function submitReschedule() {
+            const bookingId = document.getElementById("rescheduleBookingId").value;
+            const newDate = document.getElementById("inputNewDate").value;
+            const newTime = document.getElementById("inputNewTime").value.trim();
+
+            if (!newDate || !newTime) {
+                alert("กรุณากรอกวันที่และเวลาใหม่ให้ครบถ้วน");
+                return;
+            }
+
+            const btn = document.getElementById("btnSaveReschedule");
+            btn.disabled = true;
+            btn.innerText = "กำลังบันทึก...";
+
+            try {
+                const payload = {
+                    action: "rescheduleBooking",
+                    type: currentTab,
+                    bookingId: bookingId,
+                    newDate: newDate,
+                    newTime: newTime
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("เลื่อนวัน/เวลาเรียบร้อยแล้ว!");
+                toggleRescheduleModal(false);
+                selectedDateStr = newDate;
+                await initApp(true);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการเลื่อนเวลา: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "บันทึกการเลื่อนวัน/เวลา";
+            }
+        }
+
+        function promptDeleteBooking(bookingId, titleName) {
+            pendingDeleteId = bookingId;
+            document.getElementById("deleteConfirmText").innerText = `คุณแน่ใจหรือไม่ที่จะย้ายคิวงาน "${titleName}" ลงถังขยะ? (สามารถกู้คืนได้ภายหลัง)`;
+            document.getElementById("btnConfirmDelete").onclick = () => executeMoveToTrash(bookingId);
+            toggleDeleteConfirmModal(true);
+        }
+
+        function toggleDeleteConfirmModal(show) {
+            const modal = document.getElementById("deleteConfirmModal");
+            if (show) modal.classList.remove("hidden");
+            else modal.classList.add("hidden");
+        }
+
+        async function executeMoveToTrash(bookingId) {
+            toggleDeleteConfirmModal(false);
+            const loading = document.getElementById("loadingIndicator");
+            document.getElementById("loadingText").innerText = "กำลังย้ายคิวจองลงถังขยะ...";
+            loading.classList.remove("hidden");
+
+            try {
+                const payload = {
+                    action: "moveToTrash",
+                    type: currentTab,
+                    bookingId: bookingId
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("ย้ายคิวงานลงถังขยะเรียบร้อยแล้ว!");
+                await initApp(true);
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการย้ายคิว: " + err.message);
+            } finally {
+                loading.classList.add("hidden");
+            }
+        }
+
+        async function toggleTrashModal(show) {
+            const modal = document.getElementById("trashModal");
+            if (show) {
+                modal.classList.remove("hidden");
+                await loadTrashList();
+            } else {
+                modal.classList.add("hidden");
+            }
+        }
+
+        async function loadTrashList() {
+            const container = document.getElementById("trashListContainer");
+            container.innerHTML = `<div class="text-center py-6 text-slate-400">กำลังโหลดรายการถังขยะ...</div>`;
+
+            try {
+                const res = await fetch(`${SCRIPT_URL}?action=getTrash&type=${currentTab}`).then(r => r.json());
+                
+                if (res && res.status === "success" && res.data.length > 0) {
+                    container.innerHTML = "";
+                    res.data.forEach(item => {
+                        container.innerHTML += `
+                            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex justify-between items-center space-x-2">
+                                <div>
+                                    <strong class="text-slate-800 text-xs block">${item.title}</strong>
+                                    <span class="text-[10px] text-amber-600 block">📅 ${formatDateToDDMMYYYY(item.date)} | ⏰ ${item.time} น.</span>
+                                    <span class="text-[9px] text-slate-400 block">ลบเมื่อ: ${item.deletedAt}</span>
+                                </div>
+                                <button onclick="restoreBooking('${item.id}')" class="px-2.5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-[10px] shrink-0 active:scale-95 transition flex items-center gap-1 shadow-sm">
+                                    <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                                    <span>กู้คืน</span>
+                                </button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    container.innerHTML = `<div class="text-center py-6 text-slate-400">ไม่มีคิวจองในถังขยะ</div>`;
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="text-center py-6 text-rose-500">โหลดข้อมูลถังขยะไม่สำเร็จ</div>`;
+            }
+            renderIcons();
+        }
+
+        async function clearAllTrash() {
+            if (!confirm("คุณต้องการล้างถังขยะทั้งหมดอย่างถาวรใช่หรือไม่? (ไม่สามารถกู้คืนได้อีก)")) return;
+
+            const loading = document.getElementById("loadingIndicator");
+            document.getElementById("loadingText").innerText = "กำลังล้างถังขยะ...";
+            loading.classList.remove("hidden");
+
+            try {
+                const payload = {
+                    action: "clearTrash",
+                    type: currentTab
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("ล้างถังขยะเรียบร้อยแล้ว!");
+                await loadTrashList();
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการล้างถังขยะ: " + err.message);
+            } finally {
+                loading.classList.add("hidden");
+            }
+        }
+
+        async function restoreBooking(bookingId) {
+            const loading = document.getElementById("loadingIndicator");
+            document.getElementById("loadingText").innerText = "กำลังกู้คืนคิวงาน...";
+            loading.classList.remove("hidden");
+
+            try {
+                const payload = {
+                    action: "restoreFromTrash",
+                    type: currentTab,
+                    bookingId: bookingId
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("กู้คืนคิวงานและปฏิทินเรียบร้อยแล้ว!");
+                await loadTrashList();
+                await initApp(true);
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการกู้คืน: " + err.message);
+            } finally {
+                loading.classList.add("hidden");
+            }
+        }
+
+        async function submitNewBooking(event) {
+            event.preventDefault();
+            const btn = document.getElementById("btnSubmitNewBooking");
+            btn.disabled = true;
+            btn.innerHTML = `<div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-slate-900"></div> <span>กำลังบันทึกลงปฏิทิน...</span>`;
+
+            const rawPrice = Number(document.getElementById("addTotalAmt").value) || 0;
+            const discount = Number(document.getElementById("addDiscountAmt").value) || 0;
+            const netPrice = Math.max(0, rawPrice - discount);
+
+            const payload = {
+                action: "addBooking",
+                type: currentTab,
+                name: document.getElementById("addCustName").value.trim() || "ลูกค้า Walk in ไม่ทราบชื่อ",
+                phone: document.getElementById("addCustPhone").value.trim() || "ไม่มีเบอร์ติดต่อ",
+                date: document.getElementById("addBookingDate").value,
+                time: document.getElementById("addBookingTime").value.trim(),
+                packageName: document.getElementById("addPackageName").value.trim(),
+                location: document.getElementById("addLocation").value.trim(),
+                totalPrice: netPrice,
+                discountAmount: discount,
+                depositPrice: document.getElementById("addDepositAmt").value || 0
+            };
+
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("บันทึกคิวจองใหม่ลง Google Calendar เรียบร้อยแล้ว!");
+                toggleAddBookingModal(false);
+                document.getElementById("addBookingForm").reset();
+                selectedDateStr = payload.date;
+                await initApp(true);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>บันทึกลงปฏิทิน</span>`;
+            }
+        }
+
+        function toggleSettingsModal(show) {
+            const modal = document.getElementById("settingsModal");
+            document.getElementById("inputScriptUrl").value = SCRIPT_URL;
+            if (show) modal.classList.remove("hidden");
+            else modal.classList.add("hidden");
+        }
+
+        function saveSettings() {
+            const url = document.getElementById("inputScriptUrl").value.trim();
+            SCRIPT_URL = url || DEFAULT_SCRIPT_URL;
+            localStorage.setItem("037STUDIO_SCRIPT_URL", SCRIPT_URL);
+            toggleSettingsModal(false);
+            initApp(true);
+        }
+
+        function toggleDepositModal(show, bookingId = '', currentDeposit = 0, totalPrice = 0) {
+            const modal = document.getElementById("depositModal");
+            if (show) {
+                document.getElementById("modalBookingId").value = bookingId;
+                let calc50 = (totalPrice && totalPrice > 0) ? (totalPrice * 0.5) : currentDeposit;
+                document.getElementById("inputDepositAmount").value = calc50 || '';
+                document.getElementById("inputSlipFile").value = '';
+                modal.classList.remove("hidden");
+            } else {
+                modal.classList.add("hidden");
+            }
+        }
+
+        function toggleReceiptModal(show, bookingObj = null) {
+            const modal = document.getElementById("receiptModal");
+            if (show && bookingObj) {
+                activeReceiptData = bookingObj;
+                
+                const bNo = bookingObj.title.match(/#([0-9A-Z]+)/i);
+                document.getElementById("recBookingNo").innerText = bNo ? `#${bNo[1]}` : `#${bookingObj.id.substring(0, 8)}`;
+                
+                document.getElementById("recTime").innerText = `${bookingObj.time} น.`;
+                document.getElementById("recDate").innerText = formatDateToDDMMYYYY(selectedDateStr);
+                
+                const nameMatch = (bookingObj.title + "\n" + bookingObj.desc).match(/(?:ชื่อ|ชื่อเล่น)\s*[:=]?\s*([^\n\r]+)/i);
+                document.getElementById("recCustName").innerText = nameMatch ? nameMatch[1].trim() : bookingObj.title;
+
+                const phoneMatch = (bookingObj.title + "\n" + bookingObj.desc).match(/(?:โทร|เบอร์โทรศัพท์)\s*[:=]?\s*(\+?[0-9-]+)/i);
+                document.getElementById("recCustPhone").innerText = phoneMatch ? phoneMatch[1].trim() : "ไม่ระบุ";
+
+                document.getElementById("recPackage").innerText = bookingObj.title;
+                
+                if (bookingObj.location) {
+                    document.getElementById("recLocationRow").classList.remove("hidden");
+                    document.getElementById("recLocation").innerText = bookingObj.location;
+                } else {
+                    document.getElementById("recLocationRow").classList.add("hidden");
+                }
+
+                const total = Number(bookingObj.totalPrice || 0);
+                const deposit = Number(bookingObj.depositPrice || 0);
+                const balance = Math.max(0, total - deposit);
+
+                document.getElementById("recTotalAmt").innerText = `฿${total.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+                document.getElementById("recDepositAmt").innerText = `฿${deposit.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+                document.getElementById("recBalanceAmt").innerText = `฿${balance.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+                modal.classList.remove("hidden");
+            } else {
+                modal.classList.add("hidden");
+            }
+        }
+
+        function getShareText(bookingObj) {
+            const b = bookingObj || activeReceiptData;
+            if (!b) return "";
+
+            const total = Number(b.totalPrice || 0);
+            const deposit = Number(b.depositPrice || 0);
+            const balance = Math.max(0, total - deposit);
+            const formattedDate = formatDateToDDMMYYYY(b.date || selectedDateStr);
+            const receiptUrl = getReceiptPublicUrl(b.id);
+
+            return `📌 ใบสรุปยืนยันการจอง 037Studio
+------------------------------
+⏰ เวลาเข้าใช้บริการ: ${b.time} น.
+📅 วันที่นัดหมาย: ${formattedDate}
+🎬 รายการ: ${b.title}
+------------------------------
+💰 ยอดรวมบริการ: ฿${total.toLocaleString()}
+✅ ชำระมัดจำแล้ว: ฿${deposit.toLocaleString()}
+💵 ยอดคงเหลือชำระหน้างาน: ฿${balance.toLocaleString()}
+🧾 ใบจองออนไลน์: ${receiptUrl}
+------------------------------
+ขอบพระคุณมากครับ 🙏🏻`;
+        }
+
+        async function shareStandaloneReceipt() {
+            if (!standaloneBookingObj) return;
+            const text = getShareText(standaloneBookingObj);
+            const url = getReceiptPublicUrl(standaloneBookingObj.id);
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'ใบสรุปยืนยันการจอง 037Studio',
+                        text: text,
+                        url: url
+                    });
+                } catch (err) {
+                    console.log('Share error:', err);
+                }
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert("คัดลอกข้อความสรุปและลิงก์ใบจองเรียบร้อยแล้ว!");
+                });
+            }
+        }
+
+        async function shareModalReceipt() {
+            if (!activeReceiptData) return;
+            const text = getShareText(activeReceiptData);
+            const url = getReceiptPublicUrl(activeReceiptData.id);
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'ใบสรุปยืนยันการจอง 037Studio',
+                        text: text,
+                        url: url
+                    });
+                } catch (err) {
+                    console.log('Share error:', err);
+                }
+            } else {
+                copyReceiptText();
+            }
+        }
+
+        function copySingleReceiptLink(bookingId) {
+            const link = getReceiptPublicUrl(bookingId);
+            navigator.clipboard.writeText(link).then(() => {
+                alert("คัดลอกลิงก์ใบจองออนไลน์เฉพาะงานนี้เรียบร้อยแล้ว!\n" + link);
+            });
+        }
+
+        function copyReceiptText() {
+            if (!activeReceiptData) return;
+            const text = getShareText(activeReceiptData);
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert("คัดลอกข้อความสรุปใบจองพร้อมลิงก์เรียบร้อยแล้ว!");
+            });
+        }
+
+        async function initApp(forceRefresh = false) {
+            const monthFormatted = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+            document.getElementById("calendarMonthTitle").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
+            document.getElementById("monthlyLabel").innerText = `${thaiMonths[currentMonth]} ${currentYear}`;
+
+            const loading = document.getElementById("loadingIndicator");
+            loading.classList.remove("hidden");
+
+            if (forceRefresh) {
+                monthlyDataCache = {};
+                dailyDataCache = {};
+            }
+
+            try {
+                const [monthlyRes, dailyRes] = await Promise.all([
+                    fetch(`${SCRIPT_URL}?type=${currentTab}&month=${monthFormatted}`, { redirect: "follow" }).then(r => r.json()).catch(() => null),
+                    fetch(`${SCRIPT_URL}?type=${currentTab}&date=${selectedDateStr}`, { redirect: "follow" }).then(r => r.json()).catch(() => null)
+                ]);
+
+                if (monthlyRes && monthlyRes.status === "success") {
+                    monthlyDataCache = monthlyRes.data || {};
+                }
+                
+                if (dailyRes && dailyRes.status === "success") {
+                    dailyDataCache[selectedDateStr] = dailyRes;
+                    renderReport(dailyRes);
+                }
+            } catch (err) {
+                console.warn("Fast Fetch Error:", err);
+            } finally {
+                loading.classList.add("hidden");
+                renderCalendar();
+                calculateMonthlyTotals();
+            }
+        }
+
+        function calculateMonthlyTotals() {
+            const summaryCard = document.getElementById("summaryCardContainer");
+            const ownerCommBox = document.getElementById("ownerCommBox");
+            const ownerDailyCommContainer = document.getElementById("ownerDailyCommContainer");
+
+            if (currentTab === 'photobooth') {
+                if (isStaffMode) {
+                    summaryCard.classList.add("hidden");
+                } else {
+                    summaryCard.classList.remove("hidden");
+                    if (ownerCommBox) ownerCommBox.classList.add("hidden");
+                    if (ownerDailyCommContainer) ownerDailyCommContainer.classList.add("hidden");
+                }
+            } else {
+                summaryCard.classList.remove("hidden");
+                if (ownerCommBox) ownerCommBox.classList.remove("hidden");
+                if (ownerDailyCommContainer) ownerDailyCommContainer.classList.remove("hidden");
+            }
+
+            let mSales = 0;
+            let mDeposit = 0;
+            let mBaseCommission = 0;
+            let mBonusCommission = 0;
+            let totalQueues = 0;
+
+            const pkgCounts = {};
+            const bonusItems = [];
+
+            Object.entries(monthlyDataCache).forEach(([dKey, d]) => {
+                mSales += Number(d.totalSales || 0);
+                mDeposit += Number(d.totalDeposit || 0);
+
+                if (d.bookings && Array.isArray(d.bookings)) {
+                    d.bookings.forEach(b => {
+                        if (isEligibleCommissionPackage(b.title)) {
+                            totalQueues++;
+                            const bComm = getBaseCommissionOnly(b.title);
+                            const bonusComm = getBonusCommissionOnly(b.desc);
+
+                            mBaseCommission += bComm;
+                            mBonusCommission += bonusComm;
+
+                            if (bonusComm !== 0) {
+                                bonusItems.push({
+                                    date: dKey,
+                                    time: b.time,
+                                    title: b.title,
+                                    bonusAmt: bonusComm
+                                });
+                            }
+
+                            let cleanPkgName = getNormalizedPackageName(b.title);
+                            if (!pkgCounts[cleanPkgName]) pkgCounts[cleanPkgName] = 0;
+                            pkgCounts[cleanPkgName]++;
+                        }
+                    });
+                }
+            });
+
+            const mTotalCommission = mBaseCommission + mBonusCommission;
+
+            document.getElementById("monthlyTotalSales").innerText = `฿${mSales.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("monthlyTotalDeposit").innerText = `฿${mDeposit.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("monthlyTotalCommission").innerText = `฿${mTotalCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            document.getElementById("staffMonthlyCommissionTotal").innerText = `฿${mTotalCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("staffMonthlyTotalQueues").innerText = `${totalQueues} คิว`;
+
+            document.getElementById("staffBaseCommissionTotal").innerText = `฿${mBaseCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("staffBonusCommissionTotal").innerText = `${mBonusCommission >= 0 ? '+' : ''}฿${mBonusCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            document.getElementById("modalCommTotalAmt").innerText = `฿${mTotalCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("modalCommTotalQueues").innerText = `${totalQueues} คิว`;
+            document.getElementById("modalBaseCommTotal").innerText = `฿${mBaseCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("modalBonusCommTotal").innerText = `${mBonusCommission >= 0 ? '+' : ''}฿${mBonusCommission.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            const modalBonusList = document.getElementById("modalBonusBreakdownList");
+            modalBonusList.innerHTML = "";
+
+            if (bonusItems.length > 0) {
+                bonusItems.forEach(item => {
+                    const isPositive = item.bonusAmt > 0;
+                    modalBonusList.innerHTML += `
+                        <div class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-2xl flex justify-between items-center space-x-2">
+                            <div class="space-y-0.5">
+                                <div class="font-bold text-slate-900 text-xs truncate max-w-[200px]">${item.title}</div>
+                                <div class="text-[10px] text-amber-700 font-medium">📅 ${formatDateToDDMMYYYY(item.date)} | ⏰ ${item.time} น.</div>
+                            </div>
+                            <span class="font-extrabold text-xs px-2.5 py-1 rounded-xl shrink-0 ${isPositive ? 'bg-amber-500 text-slate-950' : 'bg-rose-100 text-rose-700'}">
+                                ${isPositive ? '+' : ''}${item.bonusAmt} บาท
+                            </span>
+                        </div>
+                    `;
+                });
+            } else {
+                modalBonusList.innerHTML = `<div class="text-center text-slate-400 py-2 text-[11px]">ไม่มีรายการโบนัสพิเศษในเดือนนี้</div>`;
+            }
+
+            const modalPkgList = document.getElementById("modalPackageBreakdownList");
+            modalPkgList.innerHTML = "";
+
+            if (Object.keys(pkgCounts).length > 0) {
+                Object.keys(pkgCounts).forEach(pkg => {
+                    modalPkgList.innerHTML += `
+                        <div class="bg-slate-50 border border-slate-200 p-3 rounded-2xl flex justify-between items-center space-x-2">
+                            <span class="text-slate-800 font-bold text-xs truncate max-w-[240px]">${pkg}</span>
+                            <span class="font-extrabold text-amber-900 bg-amber-100 px-3 py-1 rounded-xl text-xs shrink-0">${pkgCounts[pkg]} คิว</span>
+                        </div>
+                    `;
+                });
+            } else {
+                modalPkgList.innerHTML = `<div class="text-center text-slate-400 py-6">ไม่มีคิวงานที่ได้คอมมิชชั่นในเดือนนี้</div>`;
+            }
+        }
+
+        function changeMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+            else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+            initApp(true);
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById("calendarGrid");
+            grid.innerHTML = "";
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                grid.innerHTML += `<div class="h-11"></div>`;
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isSelected = (dateKey === selectedDateStr);
+                const dayData = monthlyDataCache[dateKey];
+
+                let countText = "";
+                let dotColorClass = "hidden";
+
+                if (dayData && dayData.count > 0) {
+                    countText = `${dayData.count} คิว`;
+                    if (dayData.totalDeposit >= dayData.totalSales && dayData.totalSales > 0) {
+                        dotColorClass = "bg-pink-400";
+                    } else if (dayData.totalDeposit > 0) {
+                        dotColorClass = "bg-emerald-500";
+                    } else {
+                        dotColorClass = "bg-amber-500";
+                    }
+                }
+
+                grid.innerHTML += `
+                    <button onclick="selectCalendarDate('${dateKey}')" 
+                            class="h-11 rounded-xl flex flex-col items-center justify-between p-1 transition border relative ${isSelected ? 'bg-amber-500 text-slate-900 font-bold border-amber-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-100'}">
+                        <span class="text-[11px] leading-none">${day}</span>
+                        ${countText ? `<span class="text-[8px] ${isSelected ? 'text-slate-900 font-extrabold' : 'text-slate-600 font-semibold'}">${countText}</span>` : '<span class="text-[8px] text-slate-300">-</span>'}
+                        <span class="w-1.5 h-1.5 rounded-full ${dotColorClass}"></span>
+                    </button>
+                `;
+            }
+            renderIcons();
+        }
+
+        function selectCalendarDate(dateStr) {
+            selectedDateStr = dateStr;
+            renderCalendar();
+            
+            if (dailyDataCache[dateStr]) {
+                renderReport(dailyDataCache[dateStr]);
+            } else {
+                fetchReportData(dateStr);
+            }
+        }
+
+        async function syncCalendar() {
+            const iconSync = document.getElementById("iconSync");
+            const loading = document.getElementById("loadingIndicator");
+            const loadingText = document.getElementById("loadingText");
+
+            iconSync.classList.add("animate-spin");
+            loadingText.innerText = "กำลังดึงข้อมูลปฏิทิน Google Calendar...";
+            loading.classList.remove("hidden");
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=sync`, { redirect: "follow" });
+                const res = await response.json();
+                
+                alert(res.message || "การดึงข้อมูลเสร็จสมบูรณ์");
+                await initApp(true);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการดึงปฏิทิน: " + (err.message || err));
+            } finally {
+                iconSync.classList.remove("animate-spin");
+                loading.classList.add("hidden");
+            }
+        }
+
+        async function fetchReportData(dateStr) {
+            const loading = document.getElementById("loadingIndicator");
+            document.getElementById("loadingText").innerText = "กำลังโหลดข้อมูลรายละเอียด...";
+            loading.classList.remove("hidden");
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?type=${currentTab}&date=${dateStr}`, { redirect: "follow" });
+                const resData = await response.json();
+                dailyDataCache[dateStr] = resData;
+                renderReport(resData);
+            } catch (err) {
+                handleError(err);
+            } finally {
+                loading.classList.add("hidden");
+            }
+        }
+
+        function formatBookingDescription(title, desc, location) {
+            let fullText = (title + "\n" + desc).trim();
+
+            let customerName = "";
+            let phone = "";
+            let line = "";
+            let jobType = "";
+            let placeName = "";
+            let mapUrl = "";
+            let bookingDocUrl = "";
+            let note = "";
+
+            const nameMatch = fullText.match(/(?:ชื่อ|ชื่อเล่น)\s*[:=]?\s*([^\n\r]+)/i);
+            if (nameMatch) customerName = nameMatch[1].trim();
+
+            const phoneMatch = fullText.match(/(?:โทร|เบอร์โทรศัพท์)\s*[:=]?\s*(\+?[0-9-]+)/i);
+            if (phoneMatch) phone = phoneMatch[1].trim();
+
+            const lineMatch = fullText.match(/LINE\s*[:=]?\s*([^\n\r]+)/i);
+            if (lineMatch) line = lineMatch[1].trim();
+
+            const typeMatch = fullText.match(/ประเภท\s*[:=]?\s*([^\n\r]+)/i);
+            if (typeMatch) jobType = typeMatch[1].trim();
+
+            const placeMatch = fullText.match(/ชื่อสถานที่\s*[:=]?\s*([^\n\r]+)/i);
+            if (placeMatch) placeName = placeMatch[1].trim();
+            else if (location) placeName = location;
+
+            const mapMatch = fullText.match(/(https?:\/\/maps[^\s\n\r]+)/i);
+            if (mapMatch) mapUrl = mapMatch[1];
+
+            const docMatch = fullText.match(/(https?:\/\/[^\s\n\r]+booking[^\s\n\r]*)/i);
+            if (docMatch) bookingDocUrl = docMatch[1];
+
+            const noteMatch = fullText.match(/หมายเหตุ[^\n\r]*\n([\s\S]+?)(?=——|$)/i);
+            if (noteMatch) note = noteMatch[1].trim();
+
+            if (!customerName && !phone && !jobType && !placeName) {
+                return `<div class="text-[11px] text-slate-600 whitespace-pre-line leading-relaxed">${fullText}</div>`;
+            }
+
+            let html = `<div class="space-y-1.5 text-[11px] text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">`;
+            
+            if (customerName || phone) html += `<div>👤 <strong>ลูกค้า:</strong> ${customerName || '-'} (${phone || 'ไม่ระบุเบอร์'})${line ? ` | LINE: ${line}` : ''}</div>`;
+            if (jobType) html += `<div>📸 <strong>ประเภทงาน:</strong> ${jobType}</div>`;
+            if (placeName) html += `<div>📍 <strong>โน้ต/คำอธิบาย:</strong> ${placeName} ${mapUrl ? `<a href="${mapUrl}" target="_blank" class="text-indigo-600 underline text-[10px] ml-1">[ดูแผนที่]</a>` : ''}</div>`;
+            if (note) html += `<div class="text-slate-500 text-[10px] pt-1 border-t border-slate-200 mt-1">📝 <strong>หมายเหตุ:</strong> ${note}</div>`;
+            if (bookingDocUrl) html += `<div class="pt-1"><a href="${bookingDocUrl}" target="_blank" class="text-amber-700 font-bold underline text-[10px] flex items-center gap-1"><i data-lucide="file-text" class="w-3 h-3"></i> ลิงก์ใบจองเอกสาร</a></div>`;
+
+            html += `</div>`;
+            return html;
+        }
+
+        function cleanHistoryText(rawHistoryText) {
+            if (!rawHistoryText) return "";
+            return rawHistoryText
+                .replace(/\[ปรับเลื่อนเวลาแล้ว\]/, '')
+                .replace(/GMT\+[0-9]+[^\n\r]*/g, '')
+                .replace(/Sat|Sun|Mon|Tue|Wed|Thu|Fri|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/gi, '')
+                .replace(/\b1899\b/g, '')
+                .replace(/(\d{2}:\d{2}):\d{2}/g, '$1')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function renderReport(response) {
+            document.getElementById("loadingIndicator").classList.add("hidden");
+
+            if (!response || response.status !== "success") return;
+
+            const data = response.data;
+            document.getElementById("displaySelectedDate").innerText = formatDateToDDMMYYYY(data.date || selectedDateStr);
+
+            const bannerTitle = document.getElementById("bannerTitle");
+            const bannerSub = document.getElementById("bannerSub");
+
+            if (data.totalBookings === 0) {
+                bannerTitle.innerText = "ไม่มีคิวจองในวันที่เลือก";
+                bannerSub.innerText = "สามารถรับงานถ่ายทำ / ตู้ PhotoBooth เพิ่มได้";
+            } else {
+                bannerTitle.innerText = `มีนัดหมายทั้งหมด ${data.totalBookings} คิว (${formatDateToDDMMYYYY(data.date || selectedDateStr)})`;
+                bannerSub.innerText = isStaffMode ? `ตารางคิวงานวันที่เปิดให้บริการ` : `ยอดรวมบริการ ฿${data.totalSales.toLocaleString()} (ได้รับมัดจำแล้ว ฿${data.totalDeposit.toLocaleString()})`;
+            }
+
+            document.getElementById("valTotalSales").innerText = `฿${Number(data.totalSales || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("valTotalBookings").innerText = `${data.totalBookings || 0} คิว`;
+
+            const depositCount = (data.bookings || []).filter(b => b.depositPrice > 0).length;
+            document.getElementById("valTotalDeposit").innerText = `฿${Number(data.totalDeposit || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("valDepositCount").innerText = `${depositCount} คิวโอนมัดจำแล้ว`;
+
+            let dailyCommTotal = 0;
+            (data.bookings || []).forEach(b => {
+                dailyCommTotal += getCommissionAmount(b.title, b.desc);
+            });
+            document.getElementById("valDailyCommission").innerText = `฿${dailyCommTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            const pendingAmt = (data.totalSales || 0) - (data.totalDeposit || 0);
+            document.getElementById("valPendingAmount").innerText = `คงเหลือ ฿${pendingAmt.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+
+            const container = document.getElementById("bookingListContainer");
+            container.innerHTML = "";
+            document.getElementById("bookingListCount").innerText = `${(data.bookings || []).length} รายการ`;
+
+            if (data.bookings && data.bookings.length > 0) {
+                data.bookings.forEach((b) => {
+                    const isFullyPaid = Number(b.depositPrice) >= Number(b.totalPrice) && Number(b.totalPrice) > 0;
+                    const isDeposit = Number(b.depositPrice) > 0;
+                    const isRescheduled = b.desc.includes("[ปรับเลื่อนเวลาแล้ว]");
+                    const formattedDesc = formatBookingDescription(b.title, b.desc, b.location);
+
+                    const commAmt = getCommissionAmount(b.title, b.desc);
+                    const bonusOnly = getBonusCommissionOnly(b.desc);
+
+                    const discMatch = b.desc.match(/ส่วนลด\s*[:=]?\s*([0-9,.]+)/i);
+                    const discountAmt = discMatch ? parseFloat(discMatch[1].replace(/,/g, '')) : 0;
+                    const originalPrice = b.totalPrice + discountAmt;
+
+                    let statusBadge = '';
+                    if (isFullyPaid) {
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-pink-100 text-pink-700 border border-pink-200">ชำระครบแล้ว</span>`;
+                    } else if (isDeposit) {
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">มัดจำแล้ว</span>`;
+                    } else {
+                        statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">ยังไม่มีมัดจำ</span>`;
+                    }
+
+                    let historyHtml = "";
+                    if (isRescheduled) {
+                        const historyMatch = b.desc.match(/\[ปรับเลื่อนเวลาแล้ว\][\s\S]*/);
+                        if (historyMatch) {
+                            const cleanedNote = cleanHistoryText(historyMatch[0]);
+                            historyHtml = `
+                                <div class="bg-indigo-50 border border-indigo-200 text-indigo-900 p-2.5 rounded-xl text-[11px] font-medium space-y-0.5">
+                                    <div class="flex items-center gap-1 font-bold text-indigo-700 mb-0.5">
+                                        <i data-lucide="history" class="w-3.5 h-3.5"></i>
+                                        <span>สรุปประวัติการย้ายเวลา:</span>
+                                    </div>
+                                    <div class="whitespace-pre-line text-[10px] text-indigo-800 leading-relaxed font-mono">${cleanedNote}</div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    let bonusBadgeStaffHtml = "";
+                    if (currentTab !== 'photobooth' && bonusOnly !== 0) {
+                        if (bonusOnly > 0) {
+                            bonusBadgeStaffHtml = `
+                                <div class="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-slate-950 p-2.5 rounded-xl font-bold text-xs flex items-center justify-between shadow-md">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-base">🎉</span>
+                                        <span>โบนัสพิเศษจากเจ้าของร้าน!</span>
+                                    </div>
+                                    <span class="bg-slate-950 text-amber-400 px-2.5 py-0.5 rounded-lg text-[11px]">+${bonusOnly} บาท</span>
+                                </div>
+                            `;
+                        } else {
+                            bonusBadgeStaffHtml = `
+                                <div class="bg-rose-50 border border-rose-200 text-rose-800 p-2 rounded-xl text-[10px] font-semibold flex items-center justify-between">
+                                    <span>ปรับลดคอมมิชชั่นพิเศษ:</span>
+                                    <span class="font-bold text-rose-600">${bonusOnly} บาท</span>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    container.innerHTML += `
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs relative overflow-hidden">
+                            ${isRescheduled ? `<div class="bg-indigo-600 text-white text-[9px] font-bold px-3 py-0.5 rounded-br-xl absolute top-0 left-0 flex items-center gap-1 shadow-sm"><i data-lucide="rotate-cw" class="w-3 h-3"></i> ปรับเลื่อนเวลาแล้ว</div>` : ''}
+
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2 ${isRescheduled ? 'pt-3' : ''}">
+                                <span class="font-extrabold text-slate-900 text-base flex items-center gap-1.5 bg-amber-100 px-2.5 py-1 rounded-xl text-amber-900">
+                                    <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+                                    ${b.time} น.
+                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    ${statusBadge}
+                                    <button onclick="promptDeleteBooking('${b.id}', '${b.title.replace(/'/g, "\\'")}')" 
+                                            class="p-1 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 transition" 
+                                            title="ย้ายลงถังขยะ">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="font-bold text-slate-900 text-sm">${b.title}</div>
+                                ${(currentTab !== 'photobooth' && commAmt > 0) ? `
+                                <span class="bg-amber-50 border border-amber-200 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded-lg shrink-0">
+                                    🎁 คอมฯ ${commAmt} บาท
+                                </span>` : ''}
+                            </div>
+
+                            ${bonusBadgeStaffHtml}
+                            ${formattedDesc}
+                            ${historyHtml}
+
+                            <div class="space-y-1 pt-1 border-t border-slate-100">
+                                <div class="flex justify-between items-center text-slate-600">
+                                    <span>ยอดรวมงานทั้งหมด:</span>
+                                    <div class="text-right">
+                                        ${discountAmt > 0 ? `<span class="line-through text-slate-400 text-[11px] mr-1.5">฿${originalPrice.toLocaleString()}</span><span class="text-rose-600 font-bold text-[10px] mr-1">(ส่วนลด ฿${discountAmt.toLocaleString()})</span>` : ''}
+                                        <strong class="text-slate-900 text-sm">฿${Number(b.totalPrice).toLocaleString()}</strong>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center text-slate-500 text-[11px]">
+                                    <span>ชำระแล้ว:</span>
+                                    <span class="${isFullyPaid ? 'text-pink-600' : 'text-emerald-600'} font-semibold">฿${Number(b.depositPrice).toLocaleString()}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-slate-500 text-[11px]">
+                                    <span>ยอดคงเหลือชำระหน้างาน:</span>
+                                    <span class="text-amber-600 font-bold">฿${Math.max(0, Number(b.totalPrice) - Number(b.depositPrice)).toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                                ${(!isStaffMode && currentTab !== 'photobooth') ? `
+                                <button onclick="openBonusCommissionModal('${b.id}', ${bonusOnly})" 
+                                        class="col-span-2 py-2 px-2 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 border border-amber-200">
+                                    <i data-lucide="gift" class="w-3.5 h-3.5 text-amber-600"></i>
+                                    <span>🎁 +เพิ่ม/ลด คอมฯ พิเศษ (เจ้าของร้าน)</span>
+                                </button>
+                                ` : ''}
+
+                                <button onclick="openRescheduleModal('${b.id}', '${b.time}')" 
+                                        class="py-2 px-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 border border-indigo-200">
+                                    <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-indigo-600"></i>
+                                    <span>📅 เลื่อนวัน/เวลา</span>
+                                </button>
+
+                                <button onclick="toggleDepositModal(true, '${b.id}', ${b.depositPrice}, ${b.totalPrice})" 
+                                        class="py-2 px-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-900 font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                    <span>กรอกมัดจำ / แนบสลิป</span>
+                                </button>
+
+                                <button onclick='toggleReceiptModal(true, ${JSON.stringify(b).replace(/'/g, "&apos;")})' 
+                                        class="py-2 px-2 bg-slate-900 hover:bg-slate-800 text-amber-400 font-semibold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm">
+                                    <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                    <span>ใบจองออนไลน์</span>
+                                </button>
+
+                                <button onclick="markAsFullyPaid('${b.id}', ${b.totalPrice})" 
+                                        class="py-2 px-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-[11px] transition flex items-center justify-center gap-1 shadow-sm active:scale-95">
+                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
+                                    <span>✅ ชำระครบแล้ว</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                container.innerHTML = `<div class="bg-white p-6 rounded-2xl text-center text-xs text-slate-400 border border-slate-200">ไม่มีคิวจองในวันที่เลือก</div>`;
+            }
+
+            renderIcons();
+        }
+
+        async function checkPublicReceiptMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const receiptId = urlParams.get('receipt');
+            const type = urlParams.get('type') || 'studio';
+
+            if (receiptId) {
+                document.getElementById("mainAdminApp").classList.add("hidden");
+                document.getElementById("standaloneReceipt").classList.remove("hidden");
+
+                try {
+                    const res = await fetch(`${SCRIPT_URL}?action=getBookingById&bookingId=${receiptId}&type=${type}`, { redirect: "follow" }).then(r => r.json());
+                    
+                    if (res && res.status === "success" && res.data) {
+                        standaloneBookingObj = res.data;
+                        renderStandaloneReceipt(res.data);
+                    } else {
+                        document.getElementById("standaloneReceiptCard").innerHTML = `
+                            <div class="text-center p-6 space-y-3">
+                                <i data-lucide="alert-circle" class="w-12 h-12 text-amber-500 mx-auto"></i>
+                                <h3 class="font-bold text-slate-800">ไม่พบข้อมูลใบจองนี้ในระบบ</h3>
+                                <p class="text-xs text-slate-500">กรุณาตรวจสอบลิงก์อีกครั้ง หรือติดต่อทางร้าน 037Studio</p>
+                            </div>
+                        `;
+                        renderIcons();
+                    }
+                } catch (err) {
+                    console.error("Fetch Public Receipt Error:", err);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        function renderStandaloneReceipt(b) {
+            const bNo = b.title.match(/#([0-9A-Z]+)/i);
+            document.getElementById("stRecBookingNo").innerText = bNo ? `#${bNo[1]}` : `#${b.id.substring(0, 8)}`;
+            
+            document.getElementById("stRecTime").innerText = `${b.time} น.`;
+            document.getElementById("stRecDate").innerText = formatDateToDDMMYYYY(b.date);
+
+            const nameMatch = (b.title + "\n" + b.desc).match(/(?:ชื่อ|ชื่อเล่น)\s*[:=]?\s*([^\n\r]+)/i);
+            document.getElementById("stRecCustName").innerText = nameMatch ? nameMatch[1].trim() : b.title;
+
+            const phoneMatch = (b.title + "\n" + b.desc).match(/(?:โทร|เบอร์โทรศัพท์)\s*[:=]?\s*(\+?[0-9-]+)/i);
+            document.getElementById("stRecCustPhone").innerText = phoneMatch ? phoneMatch[1].trim() : "ไม่ระบุ";
+
+            document.getElementById("stRecPackage").innerText = b.title;
+            
+            if (b.location) {
+                document.getElementById("stRecLocationRow").classList.remove("hidden");
+                document.getElementById("stRecLocation").innerText = b.location;
+            } else {
+                document.getElementById("stRecLocationRow").classList.add("hidden");
+            }
+
+            if (b.desc && b.desc.includes("[ปรับเลื่อนเวลาแล้ว]")) {
+                const historyMatch = b.desc.match(/\[ปรับเลื่อนเวลาแล้ว\][\s\S]*/);
+                if (historyMatch) {
+                    const cleanedHistory = cleanHistoryText(historyMatch[0]);
+                    document.getElementById("stRecHistoryRow").classList.remove("hidden");
+                    document.getElementById("stRecHistoryText").innerText = cleanedHistory;
+                }
+            } else {
+                document.getElementById("stRecHistoryRow").classList.add("hidden");
+            }
+
+            const total = Number(b.totalPrice || 0);
+            const deposit = Number(b.depositPrice || 0);
+            const balance = Math.max(0, total - deposit);
+
+            document.getElementById("stRecTotalAmt").innerText = `฿${total.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("stRecDepositAmt").innerText = `฿${deposit.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById("stRecBalanceAmt").innerText = `฿${balance.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            
+            renderIcons();
+        }
+
+        async function submitDepositAndSlip() {
+            const bookingId = document.getElementById("modalBookingId").value;
+            const depositAmount = document.getElementById("inputDepositAmount").value;
+            const fileInput = document.getElementById("inputSlipFile");
+
+            const btnSave = document.getElementById("btnSaveDeposit");
+            btnSave.disabled = true;
+            btnSave.innerHTML = `<div class="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-slate-900"></div> <span>กำลังบันทึก...</span>`;
+
+            let slipBase64 = "";
+            let slipFileName = "";
+
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                slipFileName = file.name;
+                slipBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            try {
+                const payload = {
+                    action: "updateDeposit",
+                    type: currentTab,
+                    bookingId: bookingId,
+                    depositAmount: depositAmount,
+                    slipBase64: slipBase64,
+                    slipFileName: slipFileName
+                };
+
+                await fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+
+                alert("บันทึกข้อมูลเรียบร้อยแล้ว");
+                toggleDepositModal(false);
+                await initApp(true);
+
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = `<span>บันทึกข้อมูล</span>`;
+            }
+        }
+
+        function handleError(err) {
+            document.getElementById("loadingIndicator").classList.add("hidden");
+            alert("ไม่สามารถดึงข้อมูลได้: " + (err.message || err));
+        }
+
+        window.onload = async () => {
+            checkStaffModeFromUrl();
+            const isPublicMode = await checkPublicReceiptMode();
+            if (!isPublicMode) {
+                initApp();
+            }
+        };
+    </script>
+</body>
+</html>
